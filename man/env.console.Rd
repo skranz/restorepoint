@@ -33,19 +33,3 @@
   console by pressing ESC
 }
 
-\examples{
-
-  # Generate an environment and start a console that can be used to evaluate 
-  # that environment
-  a = 5
-  env = new.env()
-  env$b = "Hi"
-  env.console(env=env, dots = list("A"="ABC"))
-  
-  # Investigate the environment of the function
-  f = function(a,b="B",...) {
-    env.console(environment(), dots=list(...))
-  }
-  f(a=5,c=10,d=20)
-  # Try typing list(...) in the new console
-}

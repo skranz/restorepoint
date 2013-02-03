@@ -1,4 +1,422 @@
-%\VignetteIndexEntry{Tutorial restore points}
-\documentclass{article}
+%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,english]{article}
+\usepackage[latin9]{inputenc}
+\usepackage[a4paper]{geometry}
+\geometry{verbose,tmargin=3cm,bmargin=3cm,lmargin=3.5cm,rmargin=3.5cm,headsep=0.5cm}
+\pagestyle{headings}
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+\usepackage{amsthm}
+\usepackage{amsmath}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\newcommand{\lyxaddress}[1]{
+\par {\raggedright #1
+\vspace{1.4em}
+\noindent\par}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage[bottom]{footmisc}
+
+\makeatother
+
+\usepackage{babel}
 \begin{document}
+
+\title{Vignette: restorepoint}
+
+
+\author{Sebastian Kranz%
+\thanks{sebastian.kranz@uni-ulm.de%
+}}
+
+\maketitle
+
+\lyxaddress{\begin{center}
+Department of Mathematics and Economics, University of Ulm
+\par\end{center}}
+\begin{abstract}
+This package allows to debug R functions via restore points instead
+of break points. When called inside a function, a restore point stores
+all local variables. These can be restored for later debugging purposes
+by simply pasting the body of the function inside the R console. This
+vignette briefly illustrates the use of restore points and compares
+advantages and drawbacks compared to break points.
+\end{abstract}
+
+\section{A simple example of debugging with restore points}
+
+Consider a function swap.in.vector that shall split a vector at a
+given position and then swap the left and right part of the vector.
+Here is an example of a call to a correct implementation:
+
+<<cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE,messages=FALSE, include=FALSE>>=
+library(restorepoint)
+swap.in.vector = function(vec,swap.ind) {
+	restore.point("swap.in.vector", to.global=!FALSE)
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:length(vec)]
+	c(right,left)
+}
+@
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+swap.in.vector(1:5,3)
+@
+
+Here is a faulty implementation that we want to debug:
+
+<<cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none">>=
+library(restorepoint)
+@
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none">>=
+library(restorepoint)
+swap.in.vector = function(vec,swap.ind) {
+	restore.point("swap.in.vector",to.global=FALSE)
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:nrow(vec)]
+	c(right,left)
+}
+swap.in.vector(1:10,4)
+@
+
+The first line in the function specifies a restore point.
+
+
+\subsubsection*{restore.point called inside a function}
+
+When restore.point(name) is called inside a function, it stores the
+current values of all local variables under the specified name. In
+the example, these local variable are vec and swap.ind and the name
+is ``swap.in.vector''.
+
+
+\subsubsection*{restore.point is called directly in the R console}
+
+When restore.point("swap.vector", to.global=FALSE) is called directly in the R console the following
+happens:
+\begin{enumerate}
+\item The previously stored local variables are copied into a new environment
+that has the global environment as enclosing environment
+\item The default R console is replaced by the \emph{restore point console}.
+In this console R commands are evaluated in the environment created
+in the first step. To leave the restore point console and go back
+to the standard R console, one just has to press ESC.
+\end{enumerate}
+In effect, we can now debug the function by simply copy \& pasting
+the interior of the function (or parts of it) including the first
+line. (Using RStudio, we can just mark all lines and press Ctrl-Enter)
+We can inspect the variables and code by simply typing any desired
+command into the R console.
+
+<<cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE,include=FALSE>>=
+  restore.point("swap.in.vector", to.global=TRUE)
+@
+
+<<cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+  restore.point("swap.in.vector", to.global=FALSE)
+@
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:nrow(vec)]
+	c(right,left)
+@
+
+The error occurred in the third line. We can inspect the variables
+in more detail to narrow down the error.
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+swap.ind
+vec
+swap.ind:nrow(vec)
+nrow(vec)
+@
+
+There is the culprit. The command nrow returns NULL for a vector.
+We want to use length(vec) or NROW(vec) instead.
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+# Try an alternative formulation
+length(vec)
+@
+
+We can correct the code in our script and directly test it by pasting
+again the whole function body. There is no need to call the function
+again, since the parameter from the previous function call are still
+stored under the name ``swap.in.vector''.
+
+<<cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE>>=
+# Corrected function
+swap.in.vector = function(vec,swap.ind) {
+	restore.point("swap.in.vector", to.global=FALSE)
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:length(vec)]
+	c(right,left)
+}
+@
+
+Test the inside of the function by copy \& paste it into the R console.
+<<cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE,include=FALSE>>=
+  restore.point("swap.in.vector", to.global=TRUE)
+@
+<<cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+  restore.point("swap.in.vector", to.global=FALSE)
+@
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+  left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:nrow(vec)]
+	c(right,left)
+@
+
+The corrected function seems to work fine so far (indeed there is
+an error left that we remove in Section 3). Pressing ESC returns to
+the normal evaluation mode of the R Console.
+
+
+\section{Why I prefer restore points over break points}
+
+A standard tool to debug a function is to use a break point. In R
+this can be performed via a call to browser() inside the function
+(e.g. at the same position where we would call restore.point). When
+during execution of the function, browser() is called, the R console
+immediately changes into an interactive debugging mode that allows
+to step through the code and enter any R expressions. In contrast,
+when restore.point is called inside the function there are no direct
+visible effects: the debugging mode starts afterward, when we decide
+to paste the body of the function into the R console.
+
+I personally prefer restore points over break points for the following
+reasons:
+\begin{enumerate}
+\item When debugging nested function calls, handling several break points
+can become very tedious, since the program flow is interrupted with
+every break point. Despite using traceback(), it is often not clear
+where exactly the error has occured. As a consequence, I tend to set
+too many break points and the program flow is interrupted too often.
+\item A related point. When I want to turn off invocation of the browser,
+I comment out \#browser() manually and source again the function body
+again. That can become quite tedious. When using restore points, I
+typically just keep the calls to restore.point in the code even if
+they seem not necessary at the moment. Calls to restore.point are
+simply not very obtrusive. They just make silently a copy of the data.
+There is some memory overhead and execution may slow down a
+bit, but usually I find that negligible.
+\item I often would like to restart from the break point after I changed
+something in the function, to test whether the new code works. But
+with nested function calls, e.g. inside an optimization procedure,
+for which an error only occurred under certain parameter constellations,
+it can sometimes be quite time consuming until the break point at
+which the error has occurred is reached again after a a restart. This
+problem does not arise for restore points, I can always restart at
+the restore point and test my modified function body.
+\item The interactive browser used by browser() has an own set of command,
+e.q. pressing ``Q'' quits the browser or pressing ``n'' debugs
+the next function. For that reason, one cannot always simply copy
+\& paste R code into the browser. In contrast, the only special key
+in the debug mode of restore point is Escape, which brings you back
+to the standard R console. The restore point browser makes debugging
+via copy \& paste from your R script (or in RStudio, select code and
+press CTRL+Enter) much easier.
+
+\end{enumerate}
+
+\section{The restore point console vs restoring into global environment}
+
+The example above used the call to restore.point with the option to.global=FALSE, which has the effect that future commands are evaluated in the restore point console. The main difference to the standard R console is that expressions are not evaluated in the global environment, but in an environment that emulates the local envirnment of the function that we want to debug.
+However, by default we have to.global = TRUE and debuggin takes a much simpler but quite dirty form. All stored objects are just copied into the global environment and the usual R console stays in place. You can test the example (make sure you have left the restore point console by pressing Esc).
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+  # If to.global=TRUE or not set, objects are restored into the
+  # the global environment
+  restore.point("swap.in.vector")
+	left  = vec[1:(swap.ind-1)]
+  #...
+@
+While this approach is quite dirty, I often prefer it for beeing slightly more convenient. Here are some disadvantages of the restore point console that make me often prefer the global environment approach.
+\begin{itemize}
+\item One has to press Esc to leave the restore point console 
+\item One cannot press the "Up-Arrow" key to get the previous command
+\end{itemize}
+
+On the other hand, there are several advantages of using the restore point console instead of simply copying the variables into the global environment.
+\begin{itemize}
+\item Variables in the global environment are not overwritten. This may seem a very important point. Interestingly though, in my experience, most times I debug an R program, it doesn't really matter if I overwrite global variables when restoring objects.
+\item In my view more importantly, the restore point console allows to run function calls with the ellipsies, like f(...). From the standard R console running a call of the form f(...) is not possible. (At least, I found no way to assign a value to ... in the global environment. If somebody knows a way, please let me know.) 
+\item If an error is caused in the restore point console, by default a stack
+trace as in traceback() is shown. I find that convenient.
+\end{itemize}
+Even though the points in favor of just using the global environment seem small, I nevertheless typically prefer that dirty approach and therefore made it the default.
+
+Here are some more points that seem noteworthy.
+\begin{itemize}
+\item If you type as a single expression the function restore.point in the
+restore point console, the corresponding objects are restored and
+the restore point console changes to the corresponding environment.
+This does not happen when restore.point is called as part of more
+complex expressions inside \{ \}, e.g. inside a function, a loop,
+or an if clause. Then the local objects are stored under the specified
+name.
+\item I programmed the restore point console such that if the command source
+is called, as a single command, then the restore point console automatically
+quits and returns to the standard console. The reason is that I typically
+source a file again, when I am finished with debugging, but I want
+then automatically return to the standard R console without having
+to press ESC before. (In later version, this behavior shall become
+optional).
+\end{itemize}
+
+\section{Some advice and examples on using restore.points}
+
+
+\subsection{When to set restore points}
+
+When writing a new function, I tend to always add a restore point
+in the first line, with name equal to the function name.
+
+<<cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none",tidy=TRUE>>=
+my.fun = function(par1,par2=0) {
+	restore.point("my.fun")
+	# ... code here ...
+}
+@
+
+Unlike break points (see discussion below), restore points don't interrupt
+program execution. Even though most errors are found quickly, there
+are also often errors that remain hidden for a while. Therefore having
+restore points in all functions can be quite convenient, in particular
+in complex code.
+
+One does not have to set restore points at the beginning of a function,
+but can put them also somewhere else in a function. 
+
+
+\subsection{Nested function calls}
+
+Restore points are particularly useful when debugging nested function
+calls and in situations in which errors arise only under specific
+parameter constellations (possibly randomly drawn ones). Here is an
+example of a faulty function that shall draw 10 random swap.point
+for a given vector and print the swapped version.
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE>>=
+
+# Randomly choose 10 swap points
+f = function(v) {
+    restore.point("f")
+	for (i in 1:10) {
+	  rand.swap.point = sample(1:length(vec),1)
+	  sw = swap.in.vector(v,rand.swap.point)
+	  print(sw)
+	}
+}
+
+set.seed(12345)
+f(v=1:5)
+
+@
+
+The result looks strange. There is a mistake either in function f
+or in swap.in.vector or in both. It is convenient to stop the execution
+whenever an obviously wrong result is encountered. For this purpose,
+we modify f by stopping execution if the length of the result is different
+than the length of the original vector. We also add a restore.point
+with name ``f.in.loop'' inside the loop.
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE>>=
+
+# Randomly choose 10 swap points
+f = function(v) {
+    restore.point("f")
+	for (i in 1:10) {
+	  rand.swap.point = sample(1:length(v),1)
+      sw = swap.in.vector(v,rand.swap.point)
+	  print(sw)
+	  restore.point("f.in.loop")
+	  stopifnot(length(sw)==length(v))
+	}
+}
+
+set.seed(12345)
+f(v=1:5)
+@
+
+The error may have occurred in swap.in.vector or in f or in both.
+By restoring the restore point in swap.in.vector, we first have a
+look at the parameters of the last function call before execution
+has been stopped.
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE>>=
+#swap.in.vector = function(vec,swap.ind) {
+	restore.point("swap.in.vector")
+	swap.ind
+	vec
+# vec has different values than the parameter v=1:5
+# with which we have called f
+@
+
+We seem to call swap.in.vector, with a swap.point that is larger than
+the vector!. This suggests that there is an error in the function
+f. We restore our restore point ``f.in.loop'' and examine the local
+variables.
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE>>=
+	restore.point("f.in.loop")
+	v
+	rand.swap.point
+    # There must be a mistake when rand.swap.point is drawn
+    rand.swap.point = sample(1:length(vec),1)
+    # Indeed, we use the wrong variable: vec instead of v
+    # Corrected:
+    rand.swap.point = sample(1:length(vec),1)    
+@
+
+It can be helpful to include a restore point within the for loop in
+order to analyze the values of the local variables before the error
+has been thrown.
+
+
+\section{Known Caveats and Issues}
+
+
+\subsection{Failure to make deep copies}
+
+One pitfall is that restore.point does not (yet) guarantee that all
+local variables are stored as a deep copy. This can only be a problem
+if parameters contain R variables that are copied by reference, like
+environments. So far I have only included a special treatment for
+local variables that are environments. Yet, e.g. it is not yet checked
+whether a local variable that is a list contains fields that are environments.
+Here is an example what can go wrong then:
+
+<<cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE>>=
+x = 10
+f = function(env,li) {
+  restore.point("f")
+  env$A = "X"
+  identical(env,li$env)
+}
+env = new.env()
+env$A = "A"
+li = list(env=env)
+f(env,li)
+
+  restore.point("f")
+# Correctly retrieve the original value for the parameter env
+env$A
+# Did not make a deep copy of the environment in the list
+li$env$A
+identical(env,li$env)
+@
+
+% 
+% \subsection{Variables in enclosing environments are neither stored nor restored}
+% 
+% So far only the local variables of a function are stored and restored.
+% If the function uses variables from enclosing environments, e.g. the
+% global environment, and those variables have changed, restore.point
+% may not replicate the behavior of the original function call. I plan
+% to add a feature that allows to mitigate this restriction.
 \end{document}

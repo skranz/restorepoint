@@ -32,29 +32,3 @@
   https://stat.ethz.ch/pipermail/r-devel/2005-September/034546.html
 }
 
-\examples{
-  # A function that has an error
-  f = function(x) {
-    1:3[0]
-  }
-  g = function(x=4) {
-    f(x)
-  }
-  # Usually no traceback is available for errors that are caught with tryCatch
-  h = function() {
-    tryCatch(
-      g(25),
-      error = identity
-    )
-  }
-  h()
-  
-  # The function eval.with.error.trace adds trace information if an error is thrown
-  h = function() {
-    tryCatch(
-      eval.with.error.trace(g(25)),
-      error = identity
-    )
-  }
-  h()
-}
