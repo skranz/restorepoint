@@ -11,4 +11,4 @@ using break points via browser().
 
 To install the package in R from github install the devtools package and then type
 
-install_github(repo="restorepoint", username="skranz")
+  install_github(repo="restorepoint", username="skranz")
