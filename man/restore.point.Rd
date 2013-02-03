@@ -1,0 +1,177 @@
+\name{restore.point}
+\alias{restore.point}
+\title{Sets a restore point}
+\usage{
+  restore.point(name, deep.copy = TRUE, force = FALSE,
+    dots = eval(substitute(list(...), env = parent.frame())),
+    to.global = get.restore.point.options()$to.global)
+}
+\arguments{
+  \item{name}{key under which the objects are stored. For
+  restore points at the beginning of a function, I would
+  suggest the name of that function.}
+
+  \item{deep.copy}{if TRUE (default) try to make deep
+  copies of objects that are by default copied by
+  reference. Works so far for environments (recursivly) and
+  data.tables. The function will search lists whether they
+  contain reference objects, but for reasons of speed not
+  yet in other containers. E.g. if an evironment is stored
+  in a data.frame, only a shallow copy will be made.
+  Setting deep.copy = FALSE may be useful if storing takes
+  very long and variables that are copied by reference are
+  not used or not modified.}
+
+  \item{force}{store even if set.storing(FALSE) has been
+  called}
+}
+\description{
+  The function behaves different when called from a
+  function or when called from the global environemnt. When
+  called from a function, it makes a backup copy of all
+  local objects and stores them internally under a key
+  specified by name. When called from the global
+  environment, it restores the previously stored objects by
+  copying them into the global environment. See the package
+  Vignette for an illustration of how this function can
+  facilitate debugging.
+}
+
+\examples{
+  # See the vignette for a detailed description
+  library(restorepoint)
+    
+  # A function that shall swap the left and right part of a vector
+  swap.in.vector = function(vec,swap.ind) {
+    restore.point("swap.in.vector")
+    left  = vec[1:(swap.ind-1)]
+    right = vec[swap.ind:nrow(vec)]
+    c(right,left)
+  }
+  swap.in.vector(1:10,4)
+  
+  # Paste the body of the function
+  restore.point("swap.in.vector")
+  left  = vec[1:(swap.ind-1)]
+  right = vec[swap.ind:nrow(vec)]
+  c(right,left)
+
+  
+  # Investigate the error line
+  swap.ind:nrow(vec)
+  nrow(vec)
+  
+  length(vec)
+  
+  # Correct the function
+  swap.in.vector = function(vec,swap.ind) {
+    restore.point("swap.in.vector")
+    left  = vec[1:(swap.ind-1)]
+    right = vec[swap.ind:length(vec)]
+    c(right,left)
+  }
+  swap.in.vector(1:10,4)
+
+  ###############################################################
+  # Nested function calls
+  ###############################################################
+    
+  f = function(vec=1:5) {
+    restore.point("f")
+    for (i in 1:20) {
+      swap.point = sample(1:length(vec),1)
+      sw = swap.in.vector(vec,swap.point)
+      print(sw)
+      if (length(sw)>length(vec)) 
+        stop("Error output too long...")
+    }
+    return(NULL)
+  }
+  f()  
+  # See the tutorial on how to correct this function
+  
+
+  ###############################################################
+  # Dealing with ...
+  ###############################################################
+  g = function(...) {
+    # restore.points can deal with function calls that use ...
+    # only with the manual browser, i.e. one needs to set
+    # to.global = FALSE
+    restore.point("g", to.global = FALSE) 
+    print(paste(...))
+    list(...)
+  }
+  g(a="Hello", b="World!")
+  
+  ######################################################
+  # Restoring also enclosing environment of a function
+  #####################################################
+  
+  library(restorepoint)
+  make.fun = function(x="make.fun.x",y="make.fun.y") {
+    f = function(y="local.y") {
+      restore.point("f") 
+      c(x,y,z)
+    }
+    return(f)
+  }
+  g = make.fun()
+  x = "glob.x"
+  z = "glob.z"
+  g()
+  x = "changed.x"
+  z = "changed.z"
+  # x and y will be restored, but no variables from .GlobalEnv
+  restore.point("f") 
+  c(x,y,z)
+  
+  
+  ###############################################################
+  # Check when environments & data.tables are cloned correctly
+  ###############################################################
+  
+  env <- new.env()
+  env$x = 1:3
+  li <- list(env=env,test="test")
+  li$env$x
+  
+  g = function(env,li) {
+    restore.point("g")
+    env$x = c("A","B")
+    li$env$x
+  }
+  g(env,li)
+  # Environment has been changed
+  env$x
+  
+  # Check if environments are correctly restored
+  restore.point("g")
+  env$x
+  li$env$x
+  
+  # Are both environments still references to the same object?
+  env$x = "new x"
+  li$env$x
+  
+  
+  
+  # data.tables are also copied by reference
+  library(data.table)
+  dt <- data.table(col=1:2)
+  init.restore.point()
+  g = function(dt) {
+    restore.point("g")
+    dt[,col:=c("A","B")]
+  }
+  g(dt)
+  dt  # dt has been changed
+  
+  restore.point("g")
+  dt # the original value has been restored
+  
+  
+  
+  
+  
+}
