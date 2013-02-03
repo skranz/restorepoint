@@ -26,3 +26,6 @@
   environment. Is used by restore.point
 }
 
+\examples{
+    
+}
