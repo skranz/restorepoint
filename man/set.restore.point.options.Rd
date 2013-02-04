@@ -8,12 +8,12 @@
   \item{options}{a list of options that shall be set.
   Possible options are listed below}
 
-  \item{storing}{Default=TRUE enable or disable storing of
-  options, setting storing = FALSE basicially turns off
-  debugging via restore points}
-
-  \item{to.global}{Default=TRUE. If TRUE then when options
-  are restored, they are simply copied into the global
+  \item{...}{options can also directly be passed. The
+  following options can be set - storing Default=TRUE
+  enable or disable storing of options, setting storing =
+  FALSE basicially turns off debugging via restore points -
+  to.global Default=TRUE. If TRUE then when options are
+  restored, they are simply copied into the global
   environment and the R console is directly used for
   debugging. If FALSE a browser mode will be started
   instead. It is still possible to parse all R commands

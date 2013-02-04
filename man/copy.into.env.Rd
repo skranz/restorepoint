@@ -10,7 +10,7 @@
   \item{source}{a list or environment from which objects
   are copied}
 
-  \item{the}{enviroenment into which objects shall be
+  \item{dest}{the environment into which objects are
   copied}
 
   \item{names}{optionally a vector of names that shall be

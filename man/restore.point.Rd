@@ -13,17 +13,25 @@
 
   \item{deep.copy}{if TRUE (default) try to make deep
   copies of objects that are by default copied by
-  reference. Works so far for environments (recursivly) and
-  data.tables. The function will search lists whether they
-  contain reference objects, but for reasons of speed not
-  yet in other containers. E.g. if an evironment is stored
-  in a data.frame, only a shallow copy will be made.
-  Setting deep.copy = FALSE may be useful if storing takes
-  very long and variables that are copied by reference are
-  not used or not modified.}
+  reference. Works so far for environments (recursivly).
+  The function will search lists whether they contain
+  reference objects, but for reasons of speed not yet in
+  other containers. E.g. if an evironment is stored in a
+  data.frame, only a shallow copy will be made. Setting
+  deep.copy = FALSE may be useful if storing takes very
+  long and variables that are copied by reference are not
+  used or not modified.}
 
   \item{force}{store even if set.storing(FALSE) has been
   called}
+
+  \item{dots}{by default a list of the ... argument of the
+  function in whicht restore.point was called}
+
+  \item{to.global}{if TRUE (default) objects are restored
+  by simply copying them into the global environment. If
+  FALSE a new environment will be created and the restore
+  point browser will be invoked.}
 }
 \description{
   The function behaves different when called from a
@@ -37,10 +45,11 @@
   facilitate debugging.
 }
 
-\examples{
+\examples{\dontrun{
+  
   # See the vignette for a detailed description
   library(restorepoint)
-    
+  set.restore.point.options(to.global = !FALSE)
   # A function that shall swap the left and right part of a vector
   swap.in.vector = function(vec,swap.ind) {
     restore.point("swap.in.vector")
@@ -128,7 +137,7 @@
   
   
   ###############################################################
-  # Check when environments & data.tables are cloned correctly
+  # Check when environments are cloned correctly
   ###############################################################
   
   env <- new.env()
@@ -156,22 +165,22 @@
   
   
   
-  # data.tables are also copied by reference
-  library(data.table)
-  dt <- data.table(col=1:2)
-  init.restore.point()
-  g = function(dt) {
-    restore.point("g")
-    dt[,col:=c("A","B")]
-  }
-  g(dt)
-  dt  # dt has been changed
-  
-  restore.point("g")
-  dt # the original value has been restored
-  
-  
+#   # data.tables are also copied by reference
+#   library(data.table)
+#   dt <- data.table(col=1:2)
+#   init.restore.point()
+#   g = function(dt) {
+#     restore.point("g")
+#     dt[,col:=c("A","B")]
+#   }
+#   g(dt)
+#   dt  # dt has been changed
+#   
+#   restore.point("g")
+#   dt # the original value has been restored
   
   
   
-}
+  
+  
+}}

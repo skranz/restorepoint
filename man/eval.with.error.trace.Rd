@@ -15,6 +15,9 @@
 
   \item{max.lines}{as in traceback()}
 
+  \item{remove.early.calls}{an integer specifying a number
+  of calls that won't be shown in the trace.}
+
   \item{error.string.fun}{a function(e,tb) that takes as
   arguments an error e and a string vector tb of the stack
   trace resulting from a call to calls.to.trace() and
@@ -32,7 +35,7 @@
   https://stat.ethz.ch/pipermail/r-devel/2005-September/034546.html
 }
 
-\examples{
+\examples{\dontrun{
   # A function that has an error
   f = function(x) {
     1:3[0]
@@ -57,4 +60,4 @@
     )
   }
   h()
-}
+}}

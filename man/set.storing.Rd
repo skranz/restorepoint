@@ -5,7 +5,7 @@
   set.storing(storing = TRUE)
 }
 \arguments{
-  \item{store}{if FALSE don't store objects if
+  \item{storing}{if FALSE don't store objects if
   restore.point or store.objects is called. May save time.
   If TRUE (default) turn on storage again.}
 }

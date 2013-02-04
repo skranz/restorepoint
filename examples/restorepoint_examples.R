@@ -7,41 +7,47 @@ examples.env.console = function() {
   env$b = "Hi"
   env.console(env=env, dots = list("A"="ABC"))
   
+  # Try typing the following into the new console
+  1+
+  1
+  a
+  b
+  list(...)
+  
   # Investigate the environment of the function
   f = function(a,b="B",...) {
     env.console(environment(), dots=list(...))
   }
+  # Run from the standard R console. Nested calls to env.console don't work well
   f(a=5,c=10,d=20)
-  # Try typing list(...) in the new console
+  # Try typing the following into the new console
+  list(...)
 } 
 
+# 
+# examples.clone.list = function() {
+#   # Test if data.table inside is cloned correctly
+#   library(data.table)
+#   li0 = list(dt = data.table(col=1:2),name="NAME")
+#   li1 = clone.list(li)
+#   # Change value in clone
+#   li1$dt[1,col] = 100
+#   # Values should be different
+#   li0$dt
+#   li1$dt
+#   
+#   env = clone.environment(as.environment(li))
+#   env$dt[1,col:="A"]      
+#   env$dt
+# } 
+# 
 
-examples.clone.list = function() {
-  # Test if data.table inside is cloned correctly
-  library(data.table)
-  li0 = list(dt = data.table(col=1:2),name="NAME")
-  li1 = clone.list(li)
-  # Change value in clone
-  li1$dt[1,col] = 100
-  # Values should be different
-  li0$dt
-  li1$dt
-  
-  env = clone.environment(as.environment(li))
-  env$dt[1,col:="A"]      
-  env$dt
-} 
-
-
-
-examples.restore.objects = function () {
-    
-} 
 
 examples.restore.point = function () {  
+  
   # See the vignette for a detailed description
   library(restorepoint)
-    
+  set.restore.point.options(to.global = !FALSE)
   # A function that shall swap the left and right part of a vector
   swap.in.vector = function(vec,swap.ind) {
     restore.point("swap.in.vector")
@@ -129,7 +135,7 @@ examples.restore.point = function () {
   
   
   ###############################################################
-  # Check when environments & data.tables are cloned correctly
+  # Check when environments are cloned correctly
   ###############################################################
   
   env <- new.env()
@@ -157,19 +163,19 @@ examples.restore.point = function () {
   
   
   
-  # data.tables are also copied by reference
-  library(data.table)
-  dt <- data.table(col=1:2)
-  init.restore.point()
-  g = function(dt) {
-    restore.point("g")
-    dt[,col:=c("A","B")]
-  }
-  g(dt)
-  dt  # dt has been changed
-  
-  restore.point("g")
-  dt # the original value has been restored
+#   # data.tables are also copied by reference
+#   library(data.table)
+#   dt <- data.table(col=1:2)
+#   init.restore.point()
+#   g = function(dt) {
+#     restore.point("g")
+#     dt[,col:=c("A","B")]
+#   }
+#   g(dt)
+#   dt  # dt has been changed
+#   
+#   restore.point("g")
+#   dt # the original value has been restored
   
   
   

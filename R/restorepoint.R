@@ -6,7 +6,7 @@
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE)
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error())
   rpglob$OBJECTS.LIST <- list()
 }
 rpglob <- new.env()
@@ -15,8 +15,9 @@ rpglob <- new.env()
 #' Set global options for restore points
 #' 
 #' @param options a list of options that shall be set. Possible options are listed below
-#' @param storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
-#' @param to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
+#' @param ... options can also directly be passed. The following options can be set
+#' - storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
+#' - to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
 #' @export 
 set.restore.point.options = function(options=NULL,...) {
   options = c(options,list(...))
@@ -41,7 +42,7 @@ get.restore.point.options = function() {
   rpglob$options
   
 } 
-
+#get.restore.point.options()
 #' Retrieves the list of all restore.points with the stored objects
 #' 
 #' @export
@@ -51,7 +52,7 @@ get.stored.object.list = function() {
 
 #' Set whether objects shall be stored or not
 #' 
-#' @param store if FALSE don't store objects if restore.point or store.objects is called. May save time. If TRUE (default) turn on storage again.
+#' @param storing if FALSE don't store objects if restore.point or store.objects is called. May save time. If TRUE (default) turn on storage again.
 #' @export
 set.storing <- function(storing=TRUE) {
   set.restore.point.options(storing=storing)
@@ -73,8 +74,10 @@ is.storing <- function() {
 #' The function behaves different when called from a function or when called from the global environemnt. When called from a function, it makes a backup copy of all local objects and stores them internally under a key specified by name. When called from the global environment, it restores the previously stored objects by copying them into the global environment. See the package Vignette for an illustration of how this function can facilitate debugging.
 #'
 #' @param name key under which the objects are stored. For restore points at the beginning of a function, I would suggest the name of that function.
-#' @param deep.copy if TRUE (default) try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly) and data.tables. The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
+#' @param deep.copy if TRUE (default) try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
 #' @param force store even if set.storing(FALSE) has been called
+#' @param dots by default a list of the ... argument of the function in whicht restore.point was called
+#' @param to.global if TRUE (default) objects are restored by simply copying them into the global environment. If FALSE a new environment will be created and the restore point browser will be invoked. 
 #' @export
 restore.point = function(name,deep.copy = TRUE, force=FALSE,
   dots = eval(substitute(list(...), env = parent.frame())),
@@ -102,9 +105,13 @@ restore.point = function(name,deep.copy = TRUE, force=FALSE,
 #' Stores all local objects of the calling environment to be able to restore them later when debugging. Is used by restore.point 
 #' 
 #' @param name key under which the objects are stored, typical the name of the calling function. If name is NULL by default the name of the calling function is chosen
-#' @param deep.copy if TRUE (default) variables that are copied by reference (in the moment environments and data.tables)  will be stored as deep copy. May take long for large variables but ensures that the value of the stored variable do not change
+#' @param deep.copy if TRUE (default) variables that are copied by reference (in the moment environments)  will be stored as deep copy. May take long for large variables but ensures that the value of the stored variable do not change
 #' @param force store even if do.store(FALSE) has been called
 #' @param store.if.called.from.global if the function is called from the global environment and store.if.called.from.global FALSE (default) does not store objects when called from the global environment but does nothing instead.
+#' @param envir the environment from which objects shall be stored. By default the local environemnt of the calling function.
+#' @param parent.num can be used to specify envir=sys.frame(parent.num)
+#' @param store.parent.env shall objects from enclosing environments of envir also be stored? So far this happens for all enclosing environments except for the global environment or baseenv.
+#' @param dots by default a list of the ... argument of the function in whicht restore.point was called
 #' @return returns nothing, just called for side effects
 #' @export
 store.objects = function(name=NULL,parent.num=-1,deep.copy = TRUE, force=FALSE, store.if.called.from.global = FALSE, envir = sys.frame(parent.num),store.parent.env = "all.but.global", dots = eval(substitute(list(...), env = parent.frame()))
@@ -234,7 +241,7 @@ copy.object = function(obj, use.copied.ref = FALSE) {
   
   # If the objects has already been copied, just return the reference of the copied version, don't create an additional copy
   
-  if (any(oclass %in% c("environment","data.table"))) {
+  if (any(oclass %in% c("environment"))) {
     if (use.copied.ref & !is.null(rpglob$copied.ref)) {
       ind = which(sapply(rpglob$copied.ref[,1],identical,y=obj))
       if (length(ind)>0) {
@@ -244,8 +251,8 @@ copy.object = function(obj, use.copied.ref = FALSE) {
     if ("environment" %in% oclass) {
       copy = clone.environment(obj,use.copied.ref = use.copied.ref)
       
-    } else if ("data.table" %in% oclass) {
-      copy = data.table::copy(obj)
+    #} else if ("data.table" %in% oclass) {
+    #  copy = data.table::copy(obj)
     }    
     # Store a copy of the reference
     rpglob$copied.ref = rbind(rpglob$copied.ref,c(obj,copy))
@@ -267,16 +274,30 @@ can.parse.multi.line = function() {
   is.multi.line("1+")
 }
 
+# Tries to get the error message for a multilin.parse.error
+get.multi.line.parse.error = function() {
+  err= tryCatch(
+    parse(text="1+"),
+    error = function(e) {
+      as.character(e)
+    }
+  )
+  err = strsplit(err,"\n")[[1]][1]
+  ret = strsplit(err,":")[[1]]
+  ret[length(ret)]
+}
+
 # Check whether the supplied code is a multiline input
-is.multi.line = function(code) {
+is.multi.line = function(code, multi.line.parse.error = get.restore.point.options()$multi.line.parse.error) {
   ret = FALSE
   tryCatch(
     parse(text=code),
     error = function(e) {
       str = as.character(e)
       #print(str)
-      if (length(grep(": unexpected end of input\n",str,fixed=TRUE))>0)
+      if (length(grep(multi.line.parse.error,str,fixed=TRUE))>0)
         ret<<-TRUE
+      
     }
   )
   return(ret)  
@@ -300,13 +321,15 @@ restore.point.browser = function(name,was.forced=FALSE) {
 
 #' Emulates an R console that evaluates expressions in the specified environement env. You return to the standard R console by pressing ESC
 #' 
-#' @param The environment in which expressions shall be evaluated. If not specified then a new environment with the given parent.env is created.
-#' @param If env is not specified the parent environemnt in which the new environment shall be created
+#' @param env The environment in which expressions shall be evaluated. If not specified then a new environment with the given parent.env is created.
+#' @param parent.env If env is not specified the parent environemnt in which the new environment shall be created
 #' @param dots a list that contains values for the ellipsies ... that will be used if you call other functions like fun(...) from within the console. You can access the values inside the console by typing list(...)
 #' @param prompt The prompt that shall be shown in the emulated console. Default = ": "
+#' @param startup.message The text that is shown when env.console is started
+#' @param multi.line.parse.error A substring used to identify an error by parse that is due to parsing the beginning of a multi-line expression. The substring can depend on the language of R error messages. The packages tries to find a correct substring automatically as default.
 #' @return Returns nothing since the function must be stopped by pressing ESC.
 #' @export
-env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console") {
+env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console", multi.line.parse.error = get.restore.point.options()$multi.line.parse.error) {
   
   
   parse.fun <- function(...) {
@@ -314,7 +337,9 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
     
     .CONSOLE.INTERNAL$prev.code = ""
     .CONSOLE.INTERNAL$prompt = .CONSOLE.INTERNAL$normal.prompt
-    
+  
+    #message("multi.line.parse.error:")
+    #print(.CONSOLE.INTERNAL$multi.line.parse.error)
     while(TRUE) {
       # Read 1 line of code
       .CONSOLE.INTERNAL$code = paste(.CONSOLE.INTERNAL$prev.code,readline(prompt=.CONSOLE.INTERNAL$prompt),sep="")
@@ -334,7 +359,7 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
         error = function(e) {
           str = as.character(e)
           #print(str)
-          if (length(grep(": unexpected end of input\n",str,fixed=TRUE))>0) {
+          if (length(grep(.CONSOLE.INTERNAL$multi.line.parse.error,str,fixed=TRUE))>0) {
             .CONSOLE.INTERNAL$multi.line<<-TRUE
           } else {
             if (length(str)>0)
@@ -392,7 +417,7 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
   }
   
   dots = c(dots)
-  env$.CONSOLE.INTERNAL = list(prompt=prompt, normal.prompt=prompt, stop.functions = c("restore.point","env.console","source"))
+  env$.CONSOLE.INTERNAL = list(prompt=prompt, normal.prompt=prompt, stop.functions = c("restore.point","env.console","source"), multi.line.parse.error = multi.line.parse.error)
 
   environment(parse.fun) <- env
   
@@ -422,6 +447,7 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
 #' 
 #' @param expr the expression to be evaluated
 #' @param max.lines as in traceback()
+#' @param remove.early.calls an integer specifying a number of calls that won't be shown in the trace.
 #' @param error.string.fun a function(e,tb) that takes as arguments an error e and a string vector tb of the stack trace resulting from a call to calls.to.trace() and returns a string with the extended error message
 #' @return If no error occurs the value of expr, otherwise an error is thrown with an error message that contains the stack trace of the error.
 #' @export
@@ -495,6 +521,8 @@ calls.to.trace = function(calls,max.lines=4) {
 
 #' Returns the ellipsis (...) that has been stored in restore.point name as a list
 #' 
+#' @param name the name whith which restore.point or store.objects has been called.
+#' 
 #' @export
 get.stored.dots = function(name) {
   env  = rpglob$OBJECTS.LIST[[name]]
@@ -509,7 +537,7 @@ get.stored.dots = function(name) {
 #' Copies all members of a list or environment into an environment
 #' 
 #' @param source a list or environment from which objects are copied
-#' @param the enviroenment into which objects shall be copied
+#' @param dest the environment into which objects are copied
 #' @param names optionally a vector of names that shall be copied. If null all objects are copied
 #' @param exclude optionally a vector of names that shall not be copied
 #' @export

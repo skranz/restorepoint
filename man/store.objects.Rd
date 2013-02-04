@@ -15,10 +15,10 @@
   by default the name of the calling function is chosen}
 
   \item{deep.copy}{if TRUE (default) variables that are
-  copied by reference (in the moment environments and
-  data.tables) will be stored as deep copy. May take long
-  for large variables but ensures that the value of the
-  stored variable do not change}
+  copied by reference (in the moment environments) will be
+  stored as deep copy. May take long for large variables
+  but ensures that the value of the stored variable do not
+  change}
 
   \item{force}{store even if do.store(FALSE) has been
   called}
@@ -28,6 +28,21 @@
   store.if.called.from.global FALSE (default) does not
   store objects when called from the global environment but
   does nothing instead.}
+
+  \item{envir}{the environment from which objects shall be
+  stored. By default the local environemnt of the calling
+  function.}
+
+  \item{parent.num}{can be used to specify
+  envir=sys.frame(parent.num)}
+
+  \item{store.parent.env}{shall objects from enclosing
+  environments of envir also be stored? So far this happens
+  for all enclosing environments except for the global
+  environment or baseenv.}
+
+  \item{dots}{by default a list of the ... argument of the
+  function in whicht restore.point was called}
 }
 \value{
   returns nothing, just called for side effects
