@@ -315,7 +315,8 @@ restore.point.browser = function(name,was.forced=FALSE) {
   # Get ... from original function
   dots = get.stored.dots(name)
 
-  env.console(env=env,dots=dots, startup.message=NULL)
+  local.variables=as.list(env)
+  env.console(env=env,dots=dots, startup.message=NULL, local.variables=local.variables)
 }
 
 
@@ -329,15 +330,18 @@ restore.point.browser = function(name,was.forced=FALSE) {
 #' @param multi.line.parse.error A substring used to identify an error by parse that is due to parsing the beginning of a multi-line expression. The substring can depend on the language of R error messages. The packages tries to find a correct substring automatically as default.
 #' @return Returns nothing since the function must be stopped by pressing ESC.
 #' @export
-env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console", multi.line.parse.error = get.restore.point.options()$multi.line.parse.error) {
+env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console", multi.line.parse.error = get.restore.point.options()$multi.line.parse.error, local.variables = NULL) {
   
   
-  parse.fun <- function(...) {
+  parse.fun <- function(..., .LOCAL.VARIABLES = NULL) {
     .IS.ENV.CONSOLE.ENVIRONMENT__ <- TRUE
     
     .CONSOLE.INTERNAL$prev.code = ""
     .CONSOLE.INTERNAL$prompt = .CONSOLE.INTERNAL$normal.prompt
   
+    if (!is.null(.LOCAL.VARIABLES)) {
+      copy.into.env(source=.LOCAL.VARIABLES)
+    }
     #message("multi.line.parse.error:")
     #print(.CONSOLE.INTERNAL$multi.line.parse.error)
     while(TRUE) {
@@ -424,9 +428,10 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
   if (!is.null(startup.message))
     message(startup.message)
   if (!is.null(dots)) {
-    ret = do.call(parse.fun,dots)
+   # ret = do.call(parse.fun,dots)
+    ret = do.call(parse.fun,c(dots,list(.LOCAL.VARIABLES=local.variables))) 
   } else {
-    ret = parse.fun()
+    ret = parse.fun(.LOCAL.VARIABLES=local.variables)
   }
 
   # Call the expression that should be called in the global environment

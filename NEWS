@@ -1,3 +1,8 @@
+restorepoint 0.11
+-----------------
+
+* In the restorepoint console, the restored variables will be directly copied into the local environment in which expressions are evaluated. Before they were just copied into an enclosing environment. One effect: ls() shows now also the restored variables.
+
 restorepoint 0.1
 ----------------
 

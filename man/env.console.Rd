@@ -6,7 +6,8 @@
     parent.env = parent.frame(), dots = NULL,
     prompt = ": ",
     startup.message = "Press ESC to return to standard R console",
-    multi.line.parse.error = get.restore.point.options()$multi.line.parse.error)
+    multi.line.parse.error = get.restore.point.options()$multi.line.parse.error,
+    local.variables = NULL)
 }
 \arguments{
   \item{env}{The environment in which expressions shall be
