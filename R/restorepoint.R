@@ -6,7 +6,7 @@
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error())
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=TRUE)
   rpglob$OBJECTS.LIST <- list()
 }
 rpglob <- new.env()
@@ -15,9 +15,10 @@ rpglob <- new.env()
 #' Set global options for restore points
 #' 
 #' @param options a list of options that shall be set. Possible options are listed below
-#' @param ... options can also directly be passed. The following options can be set
-#' - storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
-#' - to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
+#' @param ... options can also directly be passed. The following options can be set:
+#' @param storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
+#' @param deep.copy (Default=TRUE) when storing and restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. Setting deep.copy = FALSE can substantially speed up restore.point, however.
+#' @param to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
 #' @export 
 set.restore.point.options = function(options=NULL,...) {
   options = c(options,list(...))
@@ -74,15 +75,12 @@ is.storing <- function() {
 #' The function behaves different when called from a function or when called from the global environemnt. When called from a function, it makes a backup copy of all local objects and stores them internally under a key specified by name. When called from the global environment, it restores the previously stored objects by copying them into the global environment. See the package Vignette for an illustration of how this function can facilitate debugging.
 #'
 #' @param name key under which the objects are stored. For restore points at the beginning of a function, I would suggest the name of that function.
+#' @param to.global if TRUE (default) objects are restored by simply copying them into the global environment. If FALSE a new environment will be created and the restore point browser will be invoked. 
 #' @param deep.copy if TRUE (default) try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
 #' @param force store even if set.storing(FALSE) has been called
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
-#' @param to.global if TRUE (default) objects are restored by simply copying them into the global environment. If FALSE a new environment will be created and the restore point browser will be invoked. 
 #' @export
-restore.point = function(name,deep.copy = TRUE, force=FALSE,
-  dots = eval(substitute(list(...), env = parent.frame())),
-  to.global = get.restore.point.options()$to.global
-) {
+restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE, dots = eval(substitute(list(...), env = parent.frame()))) {
 
   envir = sys.frame(-1);
   
@@ -208,10 +206,10 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE) {
   # Simply copy variables of none-global parent environments into dest
   # The hierachy of enclosing environments is not replicated!!!
   for (i in rev(seq_along(penv.list))) {
-    copy.into.env(source=penv.list[[i]],dest=dest)
+    copy.into.env(source=penv.list[[i]],dest=dest,from.restore.objects=TRUE)
     restored = c(restored,ls(envir=penv.list[[i]]))
   }  
-  copy.into.env(source=cenv,dest=dest)
+  copy.into.env(source=cenv,dest=dest,from.restore.objects=TRUE)
   restored = c(restored,ls(envir=cenv))
   message(paste("Restored: ", paste(restored,collapse=",")))
 }
@@ -232,7 +230,7 @@ clone.environment = function(env, use.copied.ref = FALSE) {
 copy.object = function(obj, use.copied.ref = FALSE) {
   #print("copy.object")
   #print(paste("missing: ",missing(obj), "class(obj) ", class(obj)))
-          
+  #browser()        
   # Dealing with missing values
   if (is.name(obj)) {
     return(obj)
@@ -492,7 +490,7 @@ eval.with.error.trace = function(expr, max.lines=4, remove.early.calls =  0,
 #' @param max.lines as in traceback()
 #' @return a character vector with one element for each call formated in a similar fashion as traceback() does
 #' @export
-calls.to.trace = function(calls,max.lines=4) {
+calls.to.trace = function(calls=sys.calls(),max.lines=4) {
   x <- lapply(calls, deparse)
   n <- length(x)
   if (n == 0L) 
@@ -546,7 +544,7 @@ get.stored.dots = function(name) {
 #' @param names optionally a vector of names that shall be copied. If null all objects are copied
 #' @param exclude optionally a vector of names that shall not be copied
 #' @export
-copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL) {
+copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE) {
 
   if (is.null(names)) {
     if (is.environment(source)) {
@@ -559,7 +557,16 @@ copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.pare
   
   if (is.environment(source)) {
     for (na in names) {
-      assign(na,get(na,envir=source), envir=dest)
+      if (!from.restore.objects) {
+        assign(na,get(na,envir=source), envir=dest)
+      } else {
+        tryCatch (
+          assign(na,get(na,envir=source), envir=dest),
+          error = function(e) {
+            message(paste("Variable ", na, " was missing."))
+          }
+        )
+      }
     }
   } else if (is.list(source)) {
     for (na in names) {
@@ -568,5 +575,21 @@ copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.pare
   }
 }
 
+#' Checks whether cond holds true if not throws an error
+#' 
+#' Can be used for checking for errors in functions
+assert = function(cond) {
+  if (!all(cond)) {
+    label=as.character(match.call()[2])
+    calls = sys.calls()
+    if (length(calls)>1) {
+      trace = paste0(" in " ,as.character(calls[[length(calls)-1]])[1])
+    } else {
+      trace = ""
+    }
+    #restore.point("assert")
+    stop(paste0("The assertion '",label,"' failed", trace,"."),call.=FALSE)
+  }
+}
 
 
