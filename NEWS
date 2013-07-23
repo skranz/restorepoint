@@ -1,3 +1,11 @@
+restorepoint 0.12
+-----------------
+
+* 2013-07-23
+* Changed order of arguments in restore.point, to.global is now second argument (thanks to Liviu Andronic for the suggestion)
+* Added a simple function assert to check code via assertions
+* Allow to set deep.copy globally as a restore.point.option 
+
 restorepoint 0.11
 -----------------
 
