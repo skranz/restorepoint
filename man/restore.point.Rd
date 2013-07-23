@@ -2,14 +2,21 @@
 \alias{restore.point}
 \title{Sets a restore point}
 \usage{
-  restore.point(name, deep.copy = TRUE, force = FALSE,
-    dots = eval(substitute(list(...), env = parent.frame())),
-    to.global = get.restore.point.options()$to.global)
+  restore.point(name,
+    to.global = get.restore.point.options()$to.global,
+    deep.copy = get.restore.point.options()$deep.copy,
+    force = FALSE,
+    dots = eval(substitute(list(...), env = parent.frame())))
 }
 \arguments{
   \item{name}{key under which the objects are stored. For
   restore points at the beginning of a function, I would
   suggest the name of that function.}
+
+  \item{to.global}{if TRUE (default) objects are restored
+  by simply copying them into the global environment. If
+  FALSE a new environment will be created and the restore
+  point browser will be invoked.}
 
   \item{deep.copy}{if TRUE (default) try to make deep
   copies of objects that are by default copied by
@@ -27,11 +34,6 @@
 
   \item{dots}{by default a list of the ... argument of the
   function in whicht restore.point was called}
-
-  \item{to.global}{if TRUE (default) objects are restored
-  by simply copying them into the global environment. If
-  FALSE a new environment will be created and the restore
-  point browser will be invoked.}
 }
 \description{
   The function behaves different when called from a

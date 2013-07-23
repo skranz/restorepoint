@@ -4,7 +4,7 @@
 \usage{
   copy.into.env(source = sys.frame(sys.parent(1)),
     dest = sys.frame(sys.parent(1)), names = NULL,
-    exclude = NULL)
+    exclude = NULL, from.restore.objects = FALSE)
 }
 \arguments{
   \item{source}{a list or environment from which objects

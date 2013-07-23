@@ -9,11 +9,20 @@
   Possible options are listed below}
 
   \item{...}{options can also directly be passed. The
-  following options can be set - storing Default=TRUE
-  enable or disable storing of options, setting storing =
-  FALSE basicially turns off debugging via restore points -
-  to.global Default=TRUE. If TRUE then when options are
-  restored, they are simply copied into the global
+  following options can be set:}
+
+  \item{storing}{Default=TRUE enable or disable storing of
+  options, setting storing = FALSE basicially turns off
+  debugging via restore points}
+
+  \item{deep.copy}{(Default=TRUE) when storing and
+  restoring tries to make a deep copy of R objects that are
+  by default copied by reference, like environments.
+  Setting deep.copy = FALSE can substantially speed up
+  restore.point, however.}
+
+  \item{to.global}{Default=TRUE. If TRUE then when options
+  are restored, they are simply copied into the global
   environment and the R console is directly used for
   debugging. If FALSE a browser mode will be started
   instead. It is still possible to parse all R commands

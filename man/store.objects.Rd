@@ -1,6 +1,9 @@
 \name{store.objects}
 \alias{store.objects}
-\title{Stores all local objects of the calling environment to be able to restore them later when debugging. Is used by restore.point}
+\title{#A breakpoint using the restore point console
+#
+#Simply store objects and immediately restore the objects in the restore point console. Probably the R function browser() is better for setting breakpoints. Typically,  restore.point will be more convenient for debugging.
+#}
 \usage{
   store.objects(name = NULL, parent.num = -1,
     deep.copy = TRUE, force = FALSE,
@@ -48,8 +51,10 @@
   returns nothing, just called for side effects
 }
 \description{
-  Stores all local objects of the calling environment to be
-  able to restore them later when debugging. Is used by
-  restore.point
+  #A breakpoint using the restore point console # #Simply
+  store objects and immediately restore the objects in the
+  restore point console. Probably the R function browser()
+  is better for setting breakpoints. Typically,
+  restore.point will be more convenient for debugging. #
 }
 

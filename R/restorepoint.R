@@ -1,3 +1,5 @@
+# library(devtools);install(pkg = "C:/libraries/restorepoint/restorepoint", reload = TRUE, quick = FALSE,args = NULL, quiet = FALSE)
+
 # Debug with the R console by setting restore points.
 
 
@@ -97,8 +99,22 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
     store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
   }
 }
-
-
+# 
+# #' A breakpoint using the restore point console
+# #' 
+# #' Simply store objects and immediately restore the objects in the restore point console. Probably the R function browser() is better for setting breakpoints. Typically,  restore.point will be more convenient for debugging.
+# #' @export 
+# break.point = breakpoint = function(name = "__breakpoint__",deep.copy=TRUE,force=TRUE, show.trace=TRUE,dots = eval(substitute(list(...), env = parent.frame()))) {
+#   store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
+#   message("Breakpoint!")
+#   if (show.trace) {
+#     tb <- calls.to.trace()
+#     if (length(tb)>2) 
+#       tb = tb[1:(length(tb)-2)]
+#     cat(paste0("\nbreakpoint in:\n",paste0(tb,collapse="\n")))
+#   }
+#   restore.point.browser(name,was.forced=force, message.text ="Press ESC to exit debugging sandbox")
+# }
 
 #' Stores all local objects of the calling environment to be able to restore them later when debugging. Is used by restore.point 
 #' 
@@ -132,7 +148,7 @@ store.objects = function(name=NULL,parent.num=-1,deep.copy = TRUE, force=FALSE, 
   	name = fun.name
   }
   if (force) {
-    warning(paste("store.objects called by ", fun.name, " with force!"))
+    #warning(paste("store.objects called by ", fun.name, " with force!"))
   }
   if (deep.copy) {
     rpglob$copied.ref = NULL
@@ -302,8 +318,9 @@ is.multi.line = function(code, multi.line.parse.error = get.restore.point.option
 }
 
 # Examing a restore point by invoking the browser
-restore.point.browser = function(name,was.forced=FALSE) {
-  message(paste("restore point",name, ", press ESC to return."))
+restore.point.browser = function(name,was.forced=FALSE, message.text=paste("restore point",name, ", press ESC to return.")) {
+  if (!is.null(message.text))
+    message(message.text)
 
   # Generate environment in which the console shall be called
   enclos.env=.GlobalEnv # may store an enclosing environment instead

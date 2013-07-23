@@ -23,6 +23,16 @@ examples.env.console = function() {
   # Try typing the following into the new console
   list(...)
 } 
+# 
+# examples.break.point = function() {
+#   library(restorepoint)
+#   f = function(x=5) {
+#     breakpoint()
+#     x*2
+#     f(x*3)
+#   }
+#   f()
+# }
 
 # 
 # examples.clone.list = function() {
