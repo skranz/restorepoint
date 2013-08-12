@@ -8,7 +8,7 @@
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=TRUE)
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE)
   rpglob$OBJECTS.LIST <- list()
 }
 rpglob <- new.env()
@@ -91,9 +91,9 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
   restore = identical(.GlobalEnv,envir)  
   if (restore) {
     if (!to.global) {
-      restore.point.browser(name,was.forced=force)
+      restore.point.browser(name,was.forced=force, deep.copy=deep.copy)
     } else {
-      restore.objects(name=name,was.forced=force)
+      restore.objects(name=name,was.forced=force,deep.copy=deep.copy)
     }
   } else {
     store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
@@ -128,7 +128,7 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
 #' @return returns nothing, just called for side effects
 #' @export
-store.objects = function(name=NULL,parent.num=-1,deep.copy = TRUE, force=FALSE, store.if.called.from.global = FALSE, envir = sys.frame(parent.num),store.parent.env = "all.but.global", dots = eval(substitute(list(...), env = parent.frame()))
+store.objects = function(name=NULL,parent.num=-1,deep.copy = get.restore.point.options()$deep.copy, force=FALSE, store.if.called.from.global = FALSE, envir = sys.frame(parent.num),store.parent.env = "all.but.global", dots = eval(substitute(list(...), env = parent.frame()))
 ) {
    
   if (!(is.storing()) & !force) {
@@ -194,7 +194,7 @@ store.objects = function(name=NULL,parent.num=-1,deep.copy = TRUE, force=FALSE, 
 #' @param was.forced flag whether storage of objects was forced. If FALSE (default) a warning is shown if restore.objects is called and is.storing()==FALSE, since probably no objects have been stored.
 #' @return returns nothing but automatically copies the stored variables into the global environment
 #' @export
-restore.objects = function(name, dest=globalenv(), was.forced=FALSE) {
+restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=get.restore.point.options()$deep.copy) {
   if ((!is.storing()) & (!was.forced)) 
     warning("is.storing() == FALSE\nPossible objects were not correctly stored. Call set.storing(TRUE) to enable storing.")
   
@@ -203,30 +203,37 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE) {
   if (is.null(env)) {
     stop(paste0("No objects stored under name ", name))
   }
-  # Clone stored environment in order to guarantee that the restore point can be used several times even if reference objects are used
-  rpglob$copied.ref = NULL
-  cenv = clone.environment(env,use.copied.ref = TRUE)
-  # Copy the stored objects into the enviornment specified by dest (usually the global environment)
   
-  # Restore copies of parent enclosing environments
-  penv = parent.env(env)
-  penv.list = list()
-  count = 1
-  while (! (identical(penv,globalenv())|
-              identical(penv,baseenv())  |
-              identical(penv,emptyenv())  )) {
-    penv.list[[count]] = clone.environment(penv,use.copied.ref = TRUE)
-    penv = parent.env(penv)    
+  if (!deep.copy) {
+    # Reference objects will just be taken in their actual state
+    copy.into.env(source=env,dest=dest,from.restore.objects=TRUE)
+    restored = ls(envir=env)
+  } else if (deep.copy) {
+    # Clone stored environment in order to guarantee that the restore point can be used several times even if reference objects are used
+    rpglob$copied.ref = NULL
+    cenv = clone.environment(env,use.copied.ref = TRUE)
+    # Copy the stored objects into the enviornment specified by dest (usually the global environment)
+    
+    # Restore copies of parent enclosing environments
+    penv = parent.env(env)
+    penv.list = list()
+    count = 1
+    while (! (identical(penv,globalenv())|
+                identical(penv,baseenv())  |
+                identical(penv,emptyenv())  )) {
+      penv.list[[count]] = clone.environment(penv,use.copied.ref = TRUE)
+      penv = parent.env(penv)    
+    }
+    restored = NULL
+    # Simply copy variables of none-global parent environments into dest
+    # The hierachy of enclosing environments is not replicated!!!
+    for (i in rev(seq_along(penv.list))) {
+      copy.into.env(source=penv.list[[i]],dest=dest,from.restore.objects=TRUE)
+      restored = c(restored,ls(envir=penv.list[[i]]))
+    }  
+    copy.into.env(source=cenv,dest=dest,from.restore.objects=TRUE)
+    restored = c(restored,ls(envir=cenv))
   }
-  restored = NULL
-  # Simply copy variables of none-global parent environments into dest
-  # The hierachy of enclosing environments is not replicated!!!
-  for (i in rev(seq_along(penv.list))) {
-    copy.into.env(source=penv.list[[i]],dest=dest,from.restore.objects=TRUE)
-    restored = c(restored,ls(envir=penv.list[[i]]))
-  }  
-  copy.into.env(source=cenv,dest=dest,from.restore.objects=TRUE)
-  restored = c(restored,ls(envir=cenv))
   message(paste("Restored: ", paste(restored,collapse=",")))
 }
 
@@ -318,7 +325,7 @@ is.multi.line = function(code, multi.line.parse.error = get.restore.point.option
 }
 
 # Examing a restore point by invoking the browser
-restore.point.browser = function(name,was.forced=FALSE, message.text=paste("restore point",name, ", press ESC to return.")) {
+restore.point.browser = function(name,was.forced=FALSE, message.text=paste("restore point",name, ", press ESC to return."), deep.copy=get.restore.point.options()$deep.copy) {
   if (!is.null(message.text))
     message(message.text)
 
@@ -326,7 +333,7 @@ restore.point.browser = function(name,was.forced=FALSE, message.text=paste("rest
   enclos.env=.GlobalEnv # may store an enclosing environment instead
   env <- new.env(parent=enclos.env)
   # Populate environment with stored variables
-  restore.objects(name,dest=env,was.forced=was.forced)
+  restore.objects(name,dest=env,was.forced=was.forced, deep.copy=deep.copy)
   # Get ... from original function
   dots = get.stored.dots(name)
 

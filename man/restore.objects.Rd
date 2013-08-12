@@ -3,7 +3,8 @@
 \title{Restore stored objects by copying them into the specified environment. Is used by restore.point}
 \usage{
   restore.objects(name, dest = globalenv(),
-    was.forced = FALSE)
+    was.forced = FALSE,
+    deep.copy = get.restore.point.options()$deep.copy)
 }
 \arguments{
   \item{name}{name under which the variables have been

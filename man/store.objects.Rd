@@ -6,8 +6,8 @@
 #}
 \usage{
   store.objects(name = NULL, parent.num = -1,
-    deep.copy = TRUE, force = FALSE,
-    store.if.called.from.global = FALSE,
+    deep.copy = get.restore.point.options()$deep.copy,
+    force = FALSE, store.if.called.from.global = FALSE,
     envir = sys.frame(parent.num),
     store.parent.env = "all.but.global",
     dots = eval(substitute(list(...), env = parent.frame())))
