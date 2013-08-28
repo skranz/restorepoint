@@ -1,4 +1,0 @@
-%\VignetteIndexEntry{Tutorial restore points}
-\documentclass{article}
-\begin{document}
-\end{document}

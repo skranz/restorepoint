@@ -37,7 +37,7 @@ Here is an example of a call to a correct implementation:
 
 
 
-```s
+```r
 swap.in.vector(1:5,3)
 ```
 
@@ -48,7 +48,7 @@ swap.in.vector(1:5,3)
 
 Here is a faulty implementation that we want to debug:
 
-```s
+```r
 library(restorepoint)
 swap.in.vector = function(vec, swap.ind) {
     restore.point("swap.in.vector", to.global = FALSE)
@@ -97,12 +97,12 @@ Since the call to restore.point restores the local variables to the state they h
 
 
 
-```s
+```r
   restore.point("swap.in.vector", to.global=FALSE)
 ```
 
 
-```s
+```r
 	left  = vec[1:(swap.ind-1)]
 	right = vec[swap.ind:nrow(vec)]
 ```
@@ -111,7 +111,7 @@ Since the call to restore.point restores the local variables to the state they h
 ## Error: argument of length 0
 ```
 
-```s
+```r
 	c(right,left)
 ```
 
@@ -124,7 +124,7 @@ The error occurred in the third line. We can inspect the variables
 in more detail to narrow down the error.
 
 
-```s
+```r
 swap.ind
 ```
 
@@ -132,7 +132,7 @@ swap.ind
 ## [1] 4
 ```
 
-```s
+```r
 vec
 ```
 
@@ -140,7 +140,7 @@ vec
 ##  [1]  1  2  3  4  5  6  7  8  9 10
 ```
 
-```s
+```r
 swap.ind:nrow(vec)
 ```
 
@@ -148,7 +148,7 @@ swap.ind:nrow(vec)
 ## Error: argument of length 0
 ```
 
-```s
+```r
 nrow(vec)
 ```
 
@@ -161,7 +161,7 @@ There is the culprit. The command nrow returns NULL for a vector.
 We want to use length(vec) or NROW(vec) instead.
 
 
-```s
+```r
 # Try an alternative formulation
 length(vec)
 ```
@@ -185,13 +185,13 @@ Test the inside of the function by copy \& paste it into the R console.
 
 
 
-```s
+```r
 restore.point("swap.in.vector", to.global = FALSE)
 ```
 
 
 
-```s
+```r
 left = vec[1:(swap.ind - 1)]
 right = vec[swap.ind:length(vec)]
 c(right, left)
@@ -230,7 +230,7 @@ The example above used the call to restore.point with the option to.global=FALSE
 However, by default we have to.global = TRUE and debuggin takes a much simpler but quite dirty form. All stored objects are just copied into the global environment and the usual R console stays in place. You can test the example (make sure you have left the restore point console by pressing Esc).
 
 
-```s
+```r
   # If to.global=TRUE or not set, objects are restored into the
   # the global environment
   restore.point("swap.in.vector")
@@ -240,7 +240,7 @@ However, by default we have to.global = TRUE and debuggin takes a much simpler b
 ## Restored: swap.ind,vec
 ```
 
-```s
+```r
 	left  = vec[1:(swap.ind-1)]
   #...
 ```
@@ -291,7 +291,7 @@ When writing a new function, I tend to always add a restore point
 in the first line, with name equal to the function name.
 
 
-```s
+```r
 my.fun = function(par1, par2 = 0) {
     restore.point("my.fun")
     # ... code here ...
@@ -321,7 +321,7 @@ example of a faulty function that shall draw 10 random swap.point
 for a given vector and print the swapped version.
 
 
-```s
+```r
 
 # Randomly choose 10 swap points
 f = function(v) {
@@ -359,7 +359,7 @@ than the length of the original vector. We also add a restore.point
 with name ``f.in.loop'' inside the loop.
 
 
-```s
+```r
 
 # Randomly choose 10 swap points
 f = function(v) {
@@ -397,7 +397,7 @@ look at the parameters of the last function call before execution
 has been stopped.
 
 
-```s
+```r
 #swap.in.vector = function(vec,swap.ind) {
 	restore.point("swap.in.vector")
 ```
@@ -406,7 +406,7 @@ has been stopped.
 ## Restored: swap.ind,vec
 ```
 
-```s
+```r
 	swap.ind
 ```
 
@@ -414,7 +414,7 @@ has been stopped.
 ## [1] 1
 ```
 
-```s
+```r
 	vec
 ```
 
@@ -422,7 +422,7 @@ has been stopped.
 ## [1] 1 2 3 4 5
 ```
 
-```s
+```r
 # vec has different values than the parameter v=1:5
 # with which we have called f
 ```
@@ -434,7 +434,7 @@ f. We restore our restore point ``f.in.loop'' and examine the local
 variables.
 
 
-```s
+```r
 restore.point("f.in.loop")
 ```
 
@@ -442,7 +442,7 @@ restore.point("f.in.loop")
 ## Restored: i,rand.swap.point,sw,v
 ```
 
-```s
+```r
 v
 ```
 
@@ -450,7 +450,7 @@ v
 ## [1] 1 2 3 4 5
 ```
 
-```s
+```r
 rand.swap.point
 ```
 
@@ -458,7 +458,7 @@ rand.swap.point
 ## [1] 1
 ```
 
-```s
+```r
 # There must be a mistake when rand.swap.point is drawn
 rand.swap.point = sample(1:length(vec), 1)
 # Indeed, we use the wrong variable: vec instead of v Corrected:

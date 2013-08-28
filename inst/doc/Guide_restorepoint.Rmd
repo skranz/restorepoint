@@ -33,36 +33,36 @@ Consider a function swap.in.vector that shall split a vector at a
 given position and then swap the left and right part of the vector.
 Here is an example of a call to a correct implementation:
 
+```{r cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE,messages=FALSE, include=FALSE}
+if (FALSE) {
+  setwd("C:/libraries/restorepoint/restorepoint/inst/doc/")
+  shell("pandoc --toc -o test.md -f markdown -t markdown Guide_restorepoint.md")
+  shell("pandoc -o test1.md -f markdown -t markdown test.md --toc")
+  }
+library(restorepoint)
+swap.in.vector = function(vec,swap.ind) {
+  restore.point("swap.in.vector", to.global=!FALSE)
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:length(vec)]
+	c(right,left)
+}
+```
 
-
-
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE}
 swap.in.vector(1:5,3)
 ```
 
-```
-## [1] 3 4 5 1 2
-```
-
-
 Here is a faulty implementation that we want to debug:
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none"}
 library(restorepoint)
-swap.in.vector = function(vec, swap.ind) {
-    restore.point("swap.in.vector", to.global = FALSE)
-    left = vec[1:(swap.ind - 1)]
-    right = vec[swap.ind:nrow(vec)]
-    c(right, left)
+swap.in.vector = function(vec,swap.ind) {
+	restore.point("swap.in.vector",to.global=FALSE)
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:nrow(vec)]
+	c(right,left)
 }
-swap.in.vector(1:10, 4)
+swap.in.vector(1:10,4)
 ```
-
-```
-## Error: argument of length 0
-```
-
 
 The first line in the function specifies a restore point. The behavior of restore.point depends whether it is called inside a function or directly pasted in the console.
 
@@ -93,114 +93,67 @@ With RStudio one can do that in a very convenient fasion. Just select in the sou
 
 Since the call to restore.point restores the local variables to the state they have been in when restore.point has earlier been called during the function evaluation, the pasted lines of the function code (typically) behave in the same fashion as they did when the function was called the last time. We can inspect the variables and code by simply typing any desired command into the R console.
 
+```{r cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE,include=FALSE}
+  restore.point("swap.in.vector", to.global=TRUE)
+```
 
-
-
-
-```s
+```{r cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none",tidy=FALSE}
   restore.point("swap.in.vector", to.global=FALSE)
 ```
-
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE}
 	left  = vec[1:(swap.ind-1)]
 	right = vec[swap.ind:nrow(vec)]
-```
-
-```
-## Error: argument of length 0
-```
-
-```s
 	c(right,left)
 ```
-
-```
-## Error: object 'right' not found
-```
-
 
 The error occurred in the third line. We can inspect the variables
 in more detail to narrow down the error.
 
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE}
 swap.ind
-```
-
-```
-## [1] 4
-```
-
-```s
 vec
-```
-
-```
-##  [1]  1  2  3  4  5  6  7  8  9 10
-```
-
-```s
 swap.ind:nrow(vec)
-```
-
-```
-## Error: argument of length 0
-```
-
-```s
 nrow(vec)
 ```
-
-```
-## NULL
-```
-
 
 There is the culprit. The command nrow returns NULL for a vector.
 We want to use length(vec) or NROW(vec) instead.
 
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE}
 # Try an alternative formulation
 length(vec)
 ```
-
-```
-## [1] 10
-```
-
 
 We can correct the code in our script and directly test it by pasting
 again the whole function body. There is no need to call the function
 again, since the parameter from the previous function call are still
 stored under the name ``swap.in.vector''.
 
-
-
+```{r cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE}
+# Corrected function
+swap.in.vector = function(vec,swap.ind) {
+	restore.point("swap.in.vector", to.global=FALSE)
+	left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:length(vec)]
+	c(right,left)
+}
+```
 
 Test the inside of the function by copy \& paste it into the R console.
 
-
-
-
-
-```s
-restore.point("swap.in.vector", to.global = FALSE)
+```{r cache=FALSE, eval=TRUE, echo=FALSE, fig.keep="none",tidy=FALSE,include=FALSE}
+  restore.point("swap.in.vector", to.global=TRUE)
 ```
 
-
-
-```s
-left = vec[1:(swap.ind - 1)]
-right = vec[swap.ind:length(vec)]
-c(right, left)
+```{r cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none",tidy=!FALSE}
+  restore.point("swap.in.vector", to.global=FALSE)
 ```
 
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=!FALSE}
+  left  = vec[1:(swap.ind-1)]
+	right = vec[swap.ind:length(vec)]
+	c(right,left)
 ```
-##  [1]  4  5  6  7  8  9 10  1  2  3
-```
-
 
 The corrected function seems to work fine so far (indeed there is
 an error left that we remove in Section 3). Pressing ESC returns to
@@ -229,22 +182,13 @@ I prefer restore points over break points, mainly for the following reasons:
 The example above used the call to restore.point with the option to.global=FALSE, which has the effect that future commands are evaluated in the restore point console. The main difference to the standard R console is that expressions are not evaluated in the global environment, but in an environment that emulates the local envirnment of the function that we want to debug.
 However, by default we have to.global = TRUE and debuggin takes a much simpler but quite dirty form. All stored objects are just copied into the global environment and the usual R console stays in place. You can test the example (make sure you have left the restore point console by pressing Esc).
 
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE}
   # If to.global=TRUE or not set, objects are restored into the
   # the global environment
   restore.point("swap.in.vector")
-```
-
-```
-## Restored: swap.ind,vec
-```
-
-```s
 	left  = vec[1:(swap.ind-1)]
   #...
 ```
-
 
 While this approach is quite dirty, I often prefer it for beeing slightly more convenient. Here are some disadvantages of the restore point console that make me often prefer the global environment approach.
 
@@ -290,14 +234,12 @@ to press ESC. (In later version, this behavior may become optional).
 When writing a new function, I tend to always add a restore point
 in the first line, with name equal to the function name.
 
-
-```s
-my.fun = function(par1, par2 = 0) {
-    restore.point("my.fun")
-    # ... code here ...
+```{r cache=FALSE, eval=FALSE, echo=TRUE, fig.keep="none",tidy=TRUE}
+my.fun = function(par1,par2=0) {
+	restore.point("my.fun")
+	# ... code here ...
 }
 ```
-
 
 Unlike break points (see discussion below), restore points don't interrupt
 program execution. Even though most errors are found quickly, there
@@ -320,36 +262,22 @@ parameter constellations (possibly randomly drawn ones). Here is an
 example of a faulty function that shall draw 10 random swap.point
 for a given vector and print the swapped version.
 
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE}
 
 # Randomly choose 10 swap points
 f = function(v) {
     restore.point("f")
-    for (i in 1:10) {
-        rand.swap.point = sample(1:length(vec), 1)
-        sw = swap.in.vector(v, rand.swap.point)
-        print(sw)
-    }
+	for (i in 1:10) {
+	  rand.swap.point = sample(1:length(vec),1)
+	  sw = swap.in.vector(v,rand.swap.point)
+	  print(sw)
+	}
 }
 
 set.seed(12345)
-f(v = 1:5)
-```
+f(v=1:5)
 
 ```
-##  [1] NA NA NA  5  1  2  3  4  5 NA NA
-##  [1] NA NA NA NA  5  1  2  3  4  5 NA NA NA
-##  [1] NA NA NA  5  1  2  3  4  5 NA NA
-##  [1] NA NA NA NA  5  1  2  3  4  5 NA NA NA
-## [1] 5 1 2 3 4
-## [1] 2 3 4 5 1
-## [1] 4 5 1 2 3
-## [1] NA  5  1  2  3  4  5
-##  [1] NA NA NA  5  1  2  3  4  5 NA NA
-##  [1] NA NA NA NA NA  5  1  2  3  4  5 NA NA NA NA
-```
-
 
 The result looks strange. There is a mistake either in function f
 or in swap.in.vector or in both. It is convenient to stop the execution
@@ -358,113 +286,53 @@ we modify f by stopping execution if the length of the result is different
 than the length of the original vector. We also add a restore.point
 with name ``f.in.loop'' inside the loop.
 
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE}
 
 # Randomly choose 10 swap points
 f = function(v) {
     restore.point("f")
-    for (i in 1:10) {
-        rand.swap.point = sample(1:length(v), 1)
-        sw = swap.in.vector(v, rand.swap.point)
-        print(sw)
-        restore.point("f.in.loop")
-        stopifnot(length(sw) == length(v))
-    }
+	for (i in 1:10) {
+	  rand.swap.point = sample(1:length(v),1)
+      sw = swap.in.vector(v,rand.swap.point)
+	  print(sw)
+	  restore.point("f.in.loop")
+	  stopifnot(length(sw)==length(v))
+	}
 }
 
 set.seed(12345)
-f(v = 1:5)
+f(v=1:5)
 ```
-
-```
-## [1] 4 5 1 2 3
-## [1] 5 1 2 3 4
-## [1] 4 5 1 2 3
-## [1] 5 1 2 3 4
-## [1] 3 4 5 1 2
-## [1] 1 2 3 4 5 1
-```
-
-```
-## Error: length(sw) == length(v) is not TRUE
-```
-
 
 The error may have occurred in swap.in.vector or in f or in both.
 By restoring the restore point in swap.in.vector, we first have a
 look at the parameters of the last function call before execution
 has been stopped.
 
-
-```s
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=FALSE}
 #swap.in.vector = function(vec,swap.ind) {
 	restore.point("swap.in.vector")
-```
-
-```
-## Restored: swap.ind,vec
-```
-
-```s
 	swap.ind
-```
-
-```
-## [1] 1
-```
-
-```s
 	vec
-```
-
-```
-## [1] 1 2 3 4 5
-```
-
-```s
 # vec has different values than the parameter v=1:5
 # with which we have called f
 ```
-
 
 We seem to call swap.in.vector, with a swap.point that is larger than
 the vector!. This suggests that there is an error in the function
 f. We restore our restore point ``f.in.loop'' and examine the local
 variables.
 
-
-```s
-restore.point("f.in.loop")
+```{r cache=FALSE, eval=TRUE, echo=TRUE, fig.keep="none",tidy=TRUE}
+	restore.point("f.in.loop")
+	v
+	rand.swap.point
+    # There must be a mistake when rand.swap.point is drawn
+    rand.swap.point = sample(1:length(vec),1)
+    # Indeed, we use the wrong variable: vec instead of v
+    # Corrected:
+    rand.swap.point = sample(1:length(vec),1)    
 ```
-
-```
-## Restored: i,rand.swap.point,sw,v
-```
-
-```s
-v
-```
-
-```
-## [1] 1 2 3 4 5
-```
-
-```s
-rand.swap.point
-```
-
-```
-## [1] 1
-```
-
-```s
-# There must be a mistake when rand.swap.point is drawn
-rand.swap.point = sample(1:length(vec), 1)
-# Indeed, we use the wrong variable: vec instead of v Corrected:
-rand.swap.point = sample(1:length(vec), 1)
-```
-
 
 It can be helpful to include a restore point within the for loop in
 order to analyze the values of the local variables before the error

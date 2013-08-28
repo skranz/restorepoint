@@ -1,3 +1,11 @@
+restorepoint 0.14
+-----------------
+
+* 2013-08-28
+* Set default deep.copy = FALSE. Runs quicker. Furthermore, deep.copy is limited, e.g. it does not work correctly if an environment has pointers outside the stored arguments. Sometimes it is therefore preferable not to deep.copy environments.
+* Change in clone.environment: clone gets the same enclosing environment as the original environment. Before it was an empty environment. Improves restoring with deep.copy = TRUE  
+
+
 restorepoint 0.12
 -----------------
 

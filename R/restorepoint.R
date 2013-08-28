@@ -247,7 +247,10 @@ clone.environment = function(env, use.copied.ref = FALSE) {
   #print(as.list(env))
   #browser()
   li = eapply(env,copy.object,use.copied.ref = use.copied.ref)
-  return(as.environment(li))
+  cloned.env = as.environment(li)
+  # Set same enclosing environment as env
+  parent.env(cloned.env) <- parent.env(env)
+  cloned.env
 }
 
 copy.object = function(obj, use.copied.ref = FALSE) {
@@ -602,6 +605,7 @@ copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.pare
 #' Checks whether cond holds true if not throws an error
 #' 
 #' Can be used for checking for errors in functions
+#' @export
 assert = function(cond) {
   if (!all(cond)) {
     label=as.character(match.call()[2])

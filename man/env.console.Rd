@@ -46,28 +46,3 @@
   console by pressing ESC
 }
 
-\examples{\dontrun{
-
-  # Generate an environment and start a console that can be used to evaluate 
-  # that environment
-  a = 5
-  env = new.env()
-  env$b = "Hi"
-  env.console(env=env, dots = list("A"="ABC"))
-  
-  # Try typing the following into the new console
-  1+
-  1
-  a
-  b
-  list(...)
-  
-  # Investigate the environment of the function
-  f = function(a,b="B",...) {
-    env.console(environment(), dots=list(...))
-  }
-  # Run from the standard R console. Nested calls to env.console don't work well
-  f(a=5,c=10,d=20)
-  # Try typing the following into the new console
-  list(...)
-}}
