@@ -99,22 +99,6 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
     store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
   }
 }
-# 
-# #' A breakpoint using the restore point console
-# #' 
-# #' Simply store objects and immediately restore the objects in the restore point console. Probably the R function browser() is better for setting breakpoints. Typically,  restore.point will be more convenient for debugging.
-# #' @export 
-# break.point = breakpoint = function(name = "__breakpoint__",deep.copy=TRUE,force=TRUE, show.trace=TRUE,dots = eval(substitute(list(...), env = parent.frame()))) {
-#   store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
-#   message("Breakpoint!")
-#   if (show.trace) {
-#     tb <- calls.to.trace()
-#     if (length(tb)>2) 
-#       tb = tb[1:(length(tb)-2)]
-#     cat(paste0("\nbreakpoint in:\n",paste0(tb,collapse="\n")))
-#   }
-#   restore.point.browser(name,was.forced=force, message.text ="Press ESC to exit debugging sandbox")
-# }
 
 #' Stores all local objects of the calling environment to be able to restore them later when debugging. Is used by restore.point 
 #' 
@@ -237,12 +221,13 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=g
   message(paste("Restored: ", paste(restored,collapse=",")))
 }
 
-
+#' @export
 clone.list = function(li, use.copied.ref = FALSE) {          
   ret.li = lapply(li,copy.object,use.copied.ref = use.copied.ref)
   return(ret.li)
 }
 
+#' @export
 clone.environment = function(env, use.copied.ref = FALSE) {
   #print(as.list(env))
   #browser()
@@ -253,6 +238,7 @@ clone.environment = function(env, use.copied.ref = FALSE) {
   cloned.env
 }
 
+#' @export
 copy.object = function(obj, use.copied.ref = FALSE) {
   #print("copy.object")
   #print(paste("missing: ",missing(obj), "class(obj) ", class(obj)))
@@ -293,7 +279,7 @@ copy.object = function(obj, use.copied.ref = FALSE) {
 #' Checks whether for the installed R version the function env.console is able to correctly parse R expressions that extend over more than a line
 #' 
 #'  The current implementation of env.console is quite dirty in so far that it parses an error message of the parse() function to check whether a given R expression is assumed to be continued in the next line. That process may not work in R distributions that have error messages that are not in English. The function can.parse.multi.line() tries to check whether that process works or not
-#'  @export TRUE
+#'  @export
 can.parse.multi.line = function() {
   is.multi.line("1+")
 }
@@ -327,7 +313,8 @@ is.multi.line = function(code, multi.line.parse.error = get.restore.point.option
   return(ret)  
 }
 
-# Examing a restore point by invoking the browser
+#' Examing a restore point by invoking the browser
+#' @export
 restore.point.browser = function(name,was.forced=FALSE, message.text=paste("restore point",name, ", press ESC to return."), deep.copy=get.restore.point.options()$deep.copy) {
   if (!is.null(message.text))
     message(message.text)

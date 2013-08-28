@@ -1,53 +1,59 @@
-\name{restore.point}
-\alias{restore.point}
-\title{Sets a restore point}
-\usage{
-  restore.point(name,
-    to.global = get.restore.point.options()$to.global,
-    deep.copy = get.restore.point.options()$deep.copy,
-    force = FALSE,
-    dots = eval(substitute(list(...), env = parent.frame())))
-}
-\arguments{
-  \item{name}{key under which the objects are stored. For
-  restore points at the beginning of a function, I would
-  suggest the name of that function.}
+examples.env.console = function() {
 
-  \item{to.global}{if TRUE (default) objects are restored
-  by simply copying them into the global environment. If
-  FALSE a new environment will be created and the restore
-  point browser will be invoked.}
+  # Generate an environment and start a console that can be used to evaluate 
+  # that environment
+  a = 5
+  env = new.env()
+  env$b = "Hi"
+  env.console(env=env, dots = list("A"="ABC"))
+  
+  # Try typing the following into the new console
+  1+
+  1
+  a
+  b
+  list(...)
+  
+  # Investigate the environment of the function
+  f = function(a,b="B",...) {
+    env.console(environment(), dots=list(...))
+  }
+  # Run from the standard R console. Nested calls to env.console don't work well
+  f(a=5,c=10,d=20)
+  # Try typing the following into the new console
+  list(...)
+} 
+# 
+# examples.break.point = function() {
+#   library(restorepoint)
+#   f = function(x=5) {
+#     breakpoint()
+#     x*2
+#     f(x*3)
+#   }
+#   f()
+# }
 
-  \item{deep.copy}{if TRUE (default) try to make deep
-  copies of objects that are by default copied by
-  reference. Works so far for environments (recursivly).
-  The function will search lists whether they contain
-  reference objects, but for reasons of speed not yet in
-  other containers. E.g. if an evironment is stored in a
-  data.frame, only a shallow copy will be made. Setting
-  deep.copy = FALSE may be useful if storing takes very
-  long and variables that are copied by reference are not
-  used or not modified.}
+# 
+# examples.clone.list = function() {
+#   # Test if data.table inside is cloned correctly
+#   library(data.table)
+#   li0 = list(dt = data.table(col=1:2),name="NAME")
+#   li1 = clone.list(li)
+#   # Change value in clone
+#   li1$dt[1,col] = 100
+#   # Values should be different
+#   li0$dt
+#   li1$dt
+#   
+#   env = clone.environment(as.environment(li))
+#   env$dt[1,col:="A"]      
+#   env$dt
+# } 
+# 
 
-  \item{force}{store even if set.storing(FALSE) has been
-  called}
 
-  \item{dots}{by default a list of the ... argument of the
-  function in whicht restore.point was called}
-}
-\description{
-  The function behaves different when called from a
-  function or when called from the global environemnt. When
-  called from a function, it makes a backup copy of all
-  local objects and stores them internally under a key
-  specified by name. When called from the global
-  environment, it restores the previously stored objects by
-  copying them into the global environment. See the package
-  Vignette for an illustration of how this function can
-  facilitate debugging.
-}
-
-\examples{\dontrun{
+examples.restore.point = function () {  
   
   # See the vignette for a detailed description
   library(restorepoint)
@@ -190,4 +196,56 @@
   
   
   
-}}
+} 
+
+examples.eval.with.error.trace = function() {
+  # A function that has an error
+  f = function(x) {
+    1:3[0]
+  }
+  g = function(x=4) {
+    f(x)
+  }
+  # Usually no traceback is available for errors that are caught with tryCatch
+  h = function() {
+    tryCatch(
+      g(25),
+      error = identity
+    )
+  }
+  h()
+  
+  # The function eval.with.error.trace adds trace information if an error is thrown
+  h = function() {
+    tryCatch(
+      eval.with.error.trace(g(25)),
+      error = identity
+    )
+  }
+  h()
+}
+
+test.dots = function() {
+  dots = list(b=4)
+  f = function(a,b) {
+    a*b
+  }
+  
+  as.character(as.call((parse(text="f (a=3,b=3)")))[[1]][[1]])
+  as.character(as.call((parse(text="x=5"))))
+  
+  tryCatch(
+    f(a=5,...),
+    error = function(e){
+      print(names(e))
+      print(str(e))
+      print(str(e$call))
+    }
+  ) 
+}
+
+examples.calls.to.trace = function() {
+  f = function(a=5) calls.to.trace(rev(sys.calls()))
+  g = function(x=2) f(x)
+  g(10)
+}
