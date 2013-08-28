@@ -17,6 +17,11 @@
   forced. If FALSE (default) a warning is shown if
   restore.objects is called and is.storing()==FALSE, since
   probably no objects have been stored.}
+
+  \item{deep.copy}{when storing or restoring tries to make
+  a deep copy of R objects that are by default copied by
+  reference, like environments. Setting deep.copy = FALSE
+  can substantially speed up restore.point, however.}
 }
 \value{
   returns nothing but automatically copies the stored

@@ -18,6 +18,9 @@
 
   \item{exclude}{optionally a vector of names that shall
   not be copied}
+
+  \item{from.restore.objects}{internal paramater keep
+  FALSE}
 }
 \description{
   Copies all members of a list or environment into an

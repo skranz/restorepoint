@@ -4,6 +4,9 @@
 \usage{
   assert(cond)
 }
+\arguments{
+  \item{cond}{a condition that is checked}
+}
 \description{
   Can be used for checking for errors in functions
 }

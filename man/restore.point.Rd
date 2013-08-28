@@ -18,16 +18,16 @@
   FALSE a new environment will be created and the restore
   point browser will be invoked.}
 
-  \item{deep.copy}{if TRUE (default) try to make deep
-  copies of objects that are by default copied by
-  reference. Works so far for environments (recursivly).
-  The function will search lists whether they contain
-  reference objects, but for reasons of speed not yet in
-  other containers. E.g. if an evironment is stored in a
-  data.frame, only a shallow copy will be made. Setting
-  deep.copy = FALSE may be useful if storing takes very
-  long and variables that are copied by reference are not
-  used or not modified.}
+  \item{deep.copy}{if TRUE try to make deep copies of
+  objects that are by default copied by reference. Works so
+  far for environments (recursivly). The function will
+  search lists whether they contain reference objects, but
+  for reasons of speed not yet in other containers. E.g. if
+  an evironment is stored in a data.frame, only a shallow
+  copy will be made. Setting deep.copy = FALSE (DEFAULT)
+  may be useful if storing takes very long and variables
+  that are copied by reference are not used or not
+  modified.}
 
   \item{force}{store even if set.storing(FALSE) has been
   called}

@@ -35,6 +35,9 @@
   depend on the language of R error messages. The packages
   tries to find a correct substring automatically as
   default.}
+
+  \item{local.variables}{additional variables that shall be
+  locally available}
 }
 \value{
   Returns nothing since the function must be stopped by

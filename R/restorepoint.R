@@ -18,9 +18,9 @@ rpglob <- new.env()
 #' 
 #' @param options a list of options that shall be set. Possible options are listed below
 #' @param ... options can also directly be passed. The following options can be set:
-#' @param storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
-#' @param deep.copy (Default=TRUE) when storing and restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. Setting deep.copy = FALSE can substantially speed up restore.point, however.
-#' @param to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
+#' - storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
+#' - deep.copy Default = FALSE. If TRUE then when storing and restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. deep.copy = FALSE substantially speeds up restore.point.
+#' - to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
 #' @export 
 set.restore.point.options = function(options=NULL,...) {
   options = c(options,list(...))
@@ -78,7 +78,7 @@ is.storing <- function() {
 #'
 #' @param name key under which the objects are stored. For restore points at the beginning of a function, I would suggest the name of that function.
 #' @param to.global if TRUE (default) objects are restored by simply copying them into the global environment. If FALSE a new environment will be created and the restore point browser will be invoked. 
-#' @param deep.copy if TRUE (default) try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
+#' @param deep.copy if TRUE try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE (DEFAULT) may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
 #' @param force store even if set.storing(FALSE) has been called
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
 #' @export
@@ -176,6 +176,7 @@ store.objects = function(name=NULL,parent.num=-1,deep.copy = get.restore.point.o
 #' @param name name under which the variables have been stored
 #' @param dest environment into which the stored variables shall be copied. By default the global environment.
 #' @param was.forced flag whether storage of objects was forced. If FALSE (default) a warning is shown if restore.objects is called and is.storing()==FALSE, since probably no objects have been stored.
+#' @param deep.copy when storing or restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. Setting deep.copy = FALSE can substantially speed up restore.point, however.
 #' @return returns nothing but automatically copies the stored variables into the global environment
 #' @export
 restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=get.restore.point.options()$deep.copy) {
@@ -221,12 +222,15 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=g
   message(paste("Restored: ", paste(restored,collapse=",")))
 }
 
-#' @export
+
 clone.list = function(li, use.copied.ref = FALSE) {          
   ret.li = lapply(li,copy.object,use.copied.ref = use.copied.ref)
   return(ret.li)
 }
 
+#' Deep copy of an environment
+#' @param env the environment to be cloned
+#' @param use.copied.ref internal 
 #' @export
 clone.environment = function(env, use.copied.ref = FALSE) {
   #print(as.list(env))
@@ -238,7 +242,7 @@ clone.environment = function(env, use.copied.ref = FALSE) {
   cloned.env
 }
 
-#' @export
+
 copy.object = function(obj, use.copied.ref = FALSE) {
   #print("copy.object")
   #print(paste("missing: ",missing(obj), "class(obj) ", class(obj)))
@@ -314,6 +318,12 @@ is.multi.line = function(code, multi.line.parse.error = get.restore.point.option
 }
 
 #' Examing a restore point by invoking the browser
+#' 
+#' @param name name under which the variables have been stored
+#' @param was.forced flag whether storage of objects was forced. If FALSE (default) a warning is shown if restore.objects is called and is.storing()==FALSE, since probably no objects have been stored.
+#' @param message.text initial shown message
+#' @param deep.copy when storing or restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. Setting deep.copy = FALSE can substantially speed up restore.point, however.
+#' @return returns nothing
 #' @export
 restore.point.browser = function(name,was.forced=FALSE, message.text=paste("restore point",name, ", press ESC to return."), deep.copy=get.restore.point.options()$deep.copy) {
   if (!is.null(message.text))
@@ -340,6 +350,7 @@ restore.point.browser = function(name,was.forced=FALSE, message.text=paste("rest
 #' @param prompt The prompt that shall be shown in the emulated console. Default = ": "
 #' @param startup.message The text that is shown when env.console is started
 #' @param multi.line.parse.error A substring used to identify an error by parse that is due to parsing the beginning of a multi-line expression. The substring can depend on the language of R error messages. The packages tries to find a correct substring automatically as default.
+#' @param local.variables additional variables that shall be locally available 
 #' @return Returns nothing since the function must be stopped by pressing ESC.
 #' @export
 env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console", multi.line.parse.error = get.restore.point.options()$multi.line.parse.error, local.variables = NULL) {
@@ -557,6 +568,7 @@ get.stored.dots = function(name) {
 #' @param dest the environment into which objects are copied
 #' @param names optionally a vector of names that shall be copied. If null all objects are copied
 #' @param exclude optionally a vector of names that shall not be copied
+#' @param from.restore.objects internal paramater keep FALSE
 #' @export
 copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE) {
 
@@ -592,6 +604,7 @@ copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.pare
 #' Checks whether cond holds true if not throws an error
 #' 
 #' Can be used for checking for errors in functions
+#' @param cond a condition that is checked
 #' @export
 assert = function(cond) {
   if (!all(cond)) {
