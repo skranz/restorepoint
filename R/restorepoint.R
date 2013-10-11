@@ -466,6 +466,18 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
   }
 }
 
+#' A default error string function for eval with error trace
+#' 
+#' @param e the error object
+#' @param tb a character vector of the traceback
+default.error.string.fun = function(e,tb) {
+  if (length(tb)>0) {
+    paste0(as.character(e),"\nCall sequence:\n", paste(tb,collapse = "\n"),"\n")
+  } else {
+    paste0(as.character(e),"\n")
+  }
+}
+
 #' Evals the expression such that if an error is encountered a traceback is added to the error message.
 #' 
 #' This function is mostly useful within a tryCatch clause 
@@ -479,15 +491,7 @@ env.console = function(env = new.env(parent=parent.env), parent.env = parent.fra
 #' @param error.string.fun a function(e,tb) that takes as arguments an error e and a string vector tb of the stack trace resulting from a call to calls.to.trace() and returns a string with the extended error message
 #' @return If no error occurs the value of expr, otherwise an error is thrown with an error message that contains the stack trace of the error.
 #' @export
-eval.with.error.trace = function(expr, max.lines=4, remove.early.calls =  0,
-    error.string.fun = function(e,tb) {
-      if (length(tb)>0) {
-        paste0(as.character(e),"\nCall sequence:\n", paste(tb,collapse = "\n"),"\n")
-      } else {
-        paste0(as.character(e),"\n")
-      }
-    }
-) {
+eval.with.error.trace = function(expr, max.lines=4, remove.early.calls =  0, error.string.fun = default.error.string.fun) {
   withRestarts(
     withCallingHandlers(
       eval(expr),

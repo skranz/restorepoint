@@ -185,9 +185,4 @@
 #   
 #   restore.point("g")
 #   dt # the original value has been restored
-  
-  
-  
-  
-  
 }}

@@ -1,0 +1,15 @@
+\name{default.error.string.fun}
+\alias{default.error.string.fun}
+\title{A default error string function for eval with error trace}
+\usage{
+  default.error.string.fun(e, tb)
+}
+\arguments{
+  \item{e}{the error object}
+
+  \item{tb}{a character vector of the traceback}
+}
+\description{
+  A default error string function for eval with error trace
+}
+

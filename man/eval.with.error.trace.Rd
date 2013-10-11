@@ -4,11 +4,7 @@
 \usage{
   eval.with.error.trace(expr, max.lines = 4,
     remove.early.calls = 0,
-    error.string.fun = function(e, tb) {
-        if (length(tb) > 0) {
-            paste0(as.character(e), "\nCall sequence:\n", paste(tb, collapse = "\n"), "\n")
-        }     else {         paste0(as.character(e), "\n")
-        } })
+    error.string.fun = default.error.string.fun)
 }
 \arguments{
   \item{expr}{the expression to be evaluated}

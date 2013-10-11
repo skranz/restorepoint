@@ -191,11 +191,6 @@ examples.restore.point = function () {
 #   
 #   restore.point("g")
 #   dt # the original value has been restored
-  
-  
-  
-  
-  
 } 
 
 examples.eval.with.error.trace = function() {
