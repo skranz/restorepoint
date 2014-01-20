@@ -100,6 +100,18 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
   }
 }
 
+
+parent.env.to.store = function(penv) {
+  if(identical(penv,globalenv()) |
+     identical(penv,baseenv())   |
+     identical(penv,emptyenv())) {
+    return(FALSE)
+  }
+  if (nchar(environmentName(penv))>0)
+    return(FALSE)
+  return(TRUE)
+}
+
 #' Stores all local objects of the calling environment to be able to restore them later when debugging. Is used by restore.point 
 #' 
 #' @param name key under which the objects are stored, typical the name of the calling function. If name is NULL by default the name of the calling function is chosen
@@ -148,9 +160,7 @@ store.objects = function(name=NULL,parent.num=-1,deep.copy = get.restore.point.o
   if (store.parent.env == "all.but.global") {
     cenv = copied.env
     penv = parent.env(envir)
-    while (! (identical(penv,globalenv()) |
-              identical(penv,baseenv())   |
-              identical(penv,emptyenv())    )) {
+    while (parent.env.to.store(penv)) {
       copied.penv = copy.fun(penv)
       parent.env(cenv) <- copied.penv
       cenv = copied.penv
@@ -193,6 +203,17 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=g
     # Reference objects will just be taken in their actual state
     copy.into.env(source=env,dest=dest,from.restore.objects=TRUE)
     restored = ls(envir=env)
+    # Copy all objects from stored parent environments into dest
+    penv = parent.env(env)
+    penv.list = list()
+    count = 1
+    while (parent.env.to.store(penv)) {
+      copy.into.env(source=penv,dest=dest,from.restore.objects=TRUE, exclude=restored)
+      restored = c(restored,ls(envir=penv))
+      penv = parent.env(penv)    
+    }
+    restored = unique(restored)
+
   } else if (deep.copy) {
     # Clone stored environment in order to guarantee that the restore point can be used several times even if reference objects are used
     rpglob$copied.ref = NULL
@@ -574,7 +595,7 @@ get.stored.dots = function(name) {
 #' @param exclude optionally a vector of names that shall not be copied
 #' @param from.restore.objects internal paramater keep FALSE
 #' @export
-copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE) {
+copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE, overwrite = TRUE) {
 
   if (is.null(names)) {
     if (is.environment(source)) {
@@ -583,6 +604,10 @@ copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.pare
       names = names(source)
     }
   }
+  if (!overwrite) {
+    exclude = c(exclude, ls(envir=dest))
+  }
+  
   names = setdiff(names,exclude)
   
   if (is.environment(source)) {
@@ -624,4 +649,49 @@ assert = function(cond) {
   }
 }
 
+examples.restore.point = function() {
+  # Check how enclosing environments are copied
+  
+  f = function() {
+    a = 10
+    i = 20
+    fun = function(i) {
+      restore.point("fun")
+      i*a
+    }
+    x = lapply(3, fun)
+  }
+  
+  g = function() {
+    a = 10
+    i = 20
+    x = lapply(3,function(i) {
+      restore.point("fun")
+      i*a
+    })
+  }
+  g()
+  
+  a = 5
+  i = 4
+  f()
+  env = rpglob$OBJECTS.LIST[["fun"]]
+  ls(env)
+  penv = parent.env(env)
+  ls(penv)
+  penv$a
+  parent.env(environment(fun))
+
+  env = restorepoint:::rpglob$OBJECTS.LIST[["uheffdzusdgsf"]]
+  penv = env
+  penv = parent.env(penv)
+  env.search = lapply(search(),as.environment)
+  environmentName(penv)
+  penv
+  ls(penv)
+  penv$a
+  parent.env(environment(fun))
+  
+
+}
 
