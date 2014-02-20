@@ -4,7 +4,8 @@
 \usage{
   copy.into.env(source = sys.frame(sys.parent(1)),
     dest = sys.frame(sys.parent(1)), names = NULL,
-    exclude = NULL, from.restore.objects = FALSE)
+    exclude = NULL, from.restore.objects = FALSE,
+    overwrite = TRUE)
 }
 \arguments{
   \item{source}{a list or environment from which objects
@@ -21,6 +22,9 @@
 
   \item{from.restore.objects}{internal paramater keep
   FALSE}
+
+  \item{overwrite}{should existing objects in dest with
+  same name be overwritten?}
 }
 \description{
   Copies all members of a list or environment into an

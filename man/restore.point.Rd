@@ -48,141 +48,47 @@
 }
 
 \examples{\dontrun{
+  # Check how enclosing environments are copied
   
-  # See the vignette for a detailed description
-  library(restorepoint)
-  init.restore.point()
-  set.restore.point.options(to.global = !FALSE)
-  # A function that shall swap the left and right part of a vector
-  swap.in.vector = function(vec,swap.ind) {
-    restore.point("swap.in.vector")
-    left  = vec[1:(swap.ind-1)]
-    right = vec[swap.ind:nrow(vec)]
-    c(right,left)
-  }
-  swap.in.vector(1:10,4)
-  
-  # Paste the body of the function
-  restore.point("swap.in.vector")
-  left  = vec[1:(swap.ind-1)]
-  right = vec[swap.ind:nrow(vec)]
-  c(right,left)
-
-  
-  # Investigate the error line
-  swap.ind:nrow(vec)
-  nrow(vec)
-  
-  length(vec)
-  
-  # Correct the function
-  swap.in.vector = function(vec,swap.ind) {
-    restore.point("swap.in.vector")
-    left  = vec[1:(swap.ind-1)]
-    right = vec[swap.ind:length(vec)]
-    c(right,left)
-  }
-  swap.in.vector(1:10,4)
-
-  ###############################################################
-  # Nested function calls
-  ###############################################################
-    
-  f = function(vec=1:5) {
-    restore.point("f")
-    for (i in 1:20) {
-      swap.point = sample(1:length(vec),1)
-      sw = swap.in.vector(vec,swap.point)
-      print(sw)
-      if (length(sw)>length(vec)) 
-        stop("Error output too long...")
+  f = function() {
+    a = 10
+    i = 20
+    fun = function(i) {
+      restore.point("fun")
+      i*a
     }
-    return(NULL)
+    x = lapply(3, fun)
   }
-  f()  
-  # See the tutorial on how to correct this function
   
-
-  ###############################################################
-  # Dealing with ...
-  ###############################################################
-  g = function(...) {
-    # restore.points can deal with function calls that use ...
-    # only with the manual browser, i.e. one needs to set
-    # to.global = FALSE
-    restore.point("g", to.global = FALSE) 
-    print(paste(...))
-    list(...)
+  g = function() {
+    a = 10
+    i = 20
+    x = lapply(3,function(i) {
+      restore.point("fun")
+      i*a
+    })
   }
-  g(a="Hello", b="World!")
-  
-  ######################################################
-  # Restoring also enclosing environment of a function
-  #####################################################
-  
-  library(restorepoint)
-  make.fun = function(x="make.fun.x",y="make.fun.y") {
-    f = function(y="local.y") {
-      restore.point("f") 
-      c(x,y,z)
-    }
-    return(f)
-  }
-  g = make.fun()
-  x = "glob.x"
-  z = "glob.z"
   g()
-  x = "changed.x"
-  z = "changed.z"
-  # x and y will be restored, but no variables from .GlobalEnv
-  restore.point("f") 
-  c(x,y,z)
   
+  a = 5
+  i = 4
+  f()
+  env = rpglob$OBJECTS.LIST[["fun"]]
+  ls(env)
+  penv = parent.env(env)
+  ls(penv)
+  penv$a
+  parent.env(environment(fun))
+
+  env = restorepoint:::rpglob$OBJECTS.LIST[["uheffdzusdgsf"]]
+  penv = env
+  penv = parent.env(penv)
+  env.search = lapply(search(),as.environment)
+  environmentName(penv)
+  penv
+  ls(penv)
+  penv$a
+  parent.env(environment(fun))
   
-  ###############################################################
-  # Check when environments are cloned correctly
-  ###############################################################
-  
-  env <- new.env()
-  parent.env(env)
-  env$x = 1:3
-  li <- list(env=env,test="test")
-  li$env$x
-  
-  g = function(env,li) {
-    restore.point("g", deep.copy=TRUE)
-    as.list(env)
-    parent.env(env)
-    env$x = c("A","B")
-    li$env$x
-  }
-  g(env,li)
-  # Environment has been changed
-  env$x
-  
-  
-  # Check if environments are correctly restored
-  restore.point("g")
-  env$x
-  li$env$x
-  
-  # Are both environments still references to the same object?
-  env$x = "new x"
-  li$env$x
-  
-  
-  
-#   # data.tables are also copied by reference
-#   library(data.table)
-#   dt <- data.table(col=1:2)
-#   init.restore.point()
-#   g = function(dt) {
-#     restore.point("g")
-#     dt[,col:=c("A","B")]
-#   }
-#   g(dt)
-#   dt  # dt has been changed
-#   
-#   restore.point("g")
-#   dt # the original value has been restored
+
 }}

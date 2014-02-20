@@ -594,6 +594,7 @@ get.stored.dots = function(name) {
 #' @param names optionally a vector of names that shall be copied. If null all objects are copied
 #' @param exclude optionally a vector of names that shall not be copied
 #' @param from.restore.objects internal paramater keep FALSE
+#' @param overwrite should existing objects in dest with same name be overwritten?
 #' @export
 copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE, overwrite = TRUE) {
 
