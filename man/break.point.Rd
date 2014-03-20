@@ -1,0 +1,65 @@
+\name{break.point}
+\alias{break.point}
+\title{Sets a break point that can be debugged like a restore point}
+\usage{
+  break.point(name = "BREAK_POINT___",
+    to.global = get.restore.point.options()$break.point.to.global,
+    deep.copy = get.restore.point.options()$deep.copy,
+    force = FALSE,
+    dots = eval(substitute(list(...), env = parent.frame())))
+}
+\arguments{
+  \item{name}{key under which the objects are stored. For
+  restore points at the beginning of a function, I would
+  suggest the name of that function.}
+
+  \item{to.global}{if TRUE (default) objects are restored
+  by simply copying them into the global environment. If
+  FALSE a new environment will be created and the restore
+  point browser will be invoked.}
+
+  \item{deep.copy}{if TRUE try to make deep copies of
+  objects that are by default copied by reference. Works so
+  far for environments (recursivly). The function will
+  search lists whether they contain reference objects, but
+  for reasons of speed not yet in other containers. E.g. if
+  an evironment is stored in a data.frame, only a shallow
+  copy will be made. Setting deep.copy = FALSE (DEFAULT)
+  may be useful if storing takes very long and variables
+  that are copied by reference are not used or not
+  modified.}
+
+  \item{force}{store even if set.storing(FALSE) has been
+  called}
+
+  \item{dots}{by default a list of the ... argument of the
+  function in whicht restore.point was called}
+}
+\description{
+  This function can be used as an alternative to browser().
+  When called inside a function, break.point stores all
+  local objects and then does the following. i) If to
+  global=FALSE (the default for break.point) starts the
+  restore.point.browser for the local objects. ii) if
+  to.global=TRUE copies the local objects to the global
+  environment and stops execution.
+}
+\details{
+  An alternative to break points are restore points. In the
+  tutorial on GitHub, I provide some arguments how restore
+  points can facilitate debugging compared to break points.
+}
+
+\examples{\dontrun{
+  library(restorepoint)
+  set.restore.point.options(break.point.to.global = FALSE)
+  # A function that shall swap the left and right part of a vector
+  swap.in.vector = function(vec,swap.ind) {
+    break.point()
+    left  = vec[1:(swap.ind-1)]
+    right = vec[swap.ind:nrow(vec)]
+    c(right,left)
+  }
+  swap.in.vector(1:10,4)
+  
+}}

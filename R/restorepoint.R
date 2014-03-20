@@ -8,7 +8,7 @@
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE)
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE)
   rpglob$OBJECTS.LIST <- list()
 }
 rpglob <- new.env()
@@ -97,6 +97,41 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
     }
   } else {
     store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
+  }
+}
+
+
+#' Sets a break point that can be debugged like a restore point
+#'
+#'  This function can be used as an alternative to browser(). When called inside a function, break.point stores all local objects and then does the following. i) If to global=FALSE (the default for break.point) starts the restore.point.browser for the local objects. ii) if to.global=TRUE copies the local objects to the global environment and stops execution.
+#' 
+#' An alternative to break points are restore points. In the tutorial on GitHub, I provide some arguments how restore points can facilitate debugging compared to break points.
+#'
+#' @param name key under which the objects are stored. For restore points at the beginning of a function, I would suggest the name of that function.
+#' @param to.global if TRUE (default) objects are restored by simply copying them into the global environment. If FALSE a new environment will be created and the restore point browser will be invoked. 
+#' @param deep.copy if TRUE try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE (DEFAULT) may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
+#' @param force store even if set.storing(FALSE) has been called
+#' @param dots by default a list of the ... argument of the function in whicht restore.point was called
+#' @export
+
+break.point = function(name="BREAK_POINT___",to.global = get.restore.point.options()$break.point.to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE, dots = eval(substitute(list(...), env = parent.frame()))) {
+
+  envir = sys.frame(-1);
+  
+  # break function when called from a function, otherwise ignore
+  from.global = identical(.GlobalEnv,envir)  
+  # store and restore
+  if (!from.global) {
+    store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
+    if (!to.global) {
+      str = paste0("Break point encountered in function ", as.character(sys.call(-1)[[1]]),". Start restore point browser.")
+      message(str)
+      restore.point.browser(name,was.forced=force, deep.copy=deep.copy, message.text = NULL)
+    } else {
+      str = paste0("Break point encountered in function ", as.character(sys.call(-1)[[1]]),". Write objects to global environment")
+      restore.objects(name=name,was.forced=force,deep.copy=deep.copy)
+      stop(str)
+    }    
   }
 }
 
@@ -338,7 +373,9 @@ is.multi.line = function(code, multi.line.parse.error = get.restore.point.option
   return(ret)  
 }
 
-#' Examing a restore point by invoking the browser
+#' Examing a previously stored restore point by invoking the browser.
+#' 
+#' The function is mainly for internal use by restore.point.
 #' 
 #' @param name name under which the variables have been stored
 #' @param was.forced flag whether storage of objects was forced. If FALSE (default) a warning is shown if restore.objects is called and is.storing()==FALSE, since probably no objects have been stored.
@@ -373,6 +410,7 @@ restore.point.browser = function(name,was.forced=FALSE, message.text=paste("rest
 #' @param multi.line.parse.error A substring used to identify an error by parse that is due to parsing the beginning of a multi-line expression. The substring can depend on the language of R error messages. The packages tries to find a correct substring automatically as default.
 #' @param local.variables additional variables that shall be locally available 
 #' @return Returns nothing since the function must be stopped by pressing ESC.
+
 #' @export
 env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console", multi.line.parse.error = get.restore.point.options()$multi.line.parse.error, local.variables = NULL) {
   
@@ -649,50 +687,3 @@ assert = function(cond) {
     stop(paste0("The assertion '",label,"' failed", trace,"."),call.=FALSE)
   }
 }
-
-examples.restore.point = function() {
-  # Check how enclosing environments are copied
-  
-  f = function() {
-    a = 10
-    i = 20
-    fun = function(i) {
-      restore.point("fun")
-      i*a
-    }
-    x = lapply(3, fun)
-  }
-  
-  g = function() {
-    a = 10
-    i = 20
-    x = lapply(3,function(i) {
-      restore.point("fun")
-      i*a
-    })
-  }
-  g()
-  
-  a = 5
-  i = 4
-  f()
-  env = rpglob$OBJECTS.LIST[["fun"]]
-  ls(env)
-  penv = parent.env(env)
-  ls(penv)
-  penv$a
-  parent.env(environment(fun))
-
-  env = restorepoint:::rpglob$OBJECTS.LIST[["uheffdzusdgsf"]]
-  penv = env
-  penv = parent.env(penv)
-  env.search = lapply(search(),as.environment)
-  environmentName(penv)
-  penv
-  ls(penv)
-  penv$a
-  parent.env(environment(fun))
-  
-
-}
-

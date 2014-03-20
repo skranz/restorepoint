@@ -1,4 +1,5 @@
 export(assert)
+export(break.point)
 export(calls.to.trace)
 export(can.parse.multi.line)
 export(clone.environment)
