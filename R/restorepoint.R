@@ -8,7 +8,7 @@
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE)
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE, display.restore.point=FALSE)
   rpglob$OBJECTS.LIST <- list()
 }
 rpglob <- new.env()
@@ -82,9 +82,12 @@ is.storing <- function() {
 #' @param force store even if set.storing(FALSE) has been called
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
 #' @export
-restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE, dots = eval(substitute(list(...), env = parent.frame()))) {
+restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, dots = eval(substitute(list(...), env = parent.frame()))) {
 
-  envir = sys.frame(-1);
+  envir = sys.frame(-1)
+  if (isTRUE(display.restore.point)) {
+    cat("\nrestore.point: ", name)
+  }
   
   # restore objects if called from the global environment
   # when called from a function store objects
@@ -187,7 +190,7 @@ store.objects = function(name=NULL,parent.num=-1,deep.copy = get.restore.point.o
       clone.environment(envir, use.copied.ref = TRUE)
   } else {
     copy.fun = function(envir)
-      as.environment(as.list(envir))
+      as.environment(as.list(envir, all.names=TRUE))
   }
   
   copied.env = copy.fun(envir)
@@ -237,14 +240,14 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=g
   if (!deep.copy) {
     # Reference objects will just be taken in their actual state
     copy.into.env(source=env,dest=dest,from.restore.objects=TRUE)
-    restored = ls(envir=env)
+    restored = ls(envir=env, all.names=TRUE)
     # Copy all objects from stored parent environments into dest
     penv = parent.env(env)
     penv.list = list()
     count = 1
     while (parent.env.to.store(penv)) {
       copy.into.env(source=penv,dest=dest,from.restore.objects=TRUE, exclude=restored)
-      restored = c(restored,ls(envir=penv))
+      restored = c(restored,ls(envir=penv, all.names=TRUE))
       penv = parent.env(penv)    
     }
     restored = unique(restored)
@@ -270,10 +273,10 @@ restore.objects = function(name, dest=globalenv(), was.forced=FALSE, deep.copy=g
     # The hierachy of enclosing environments is not replicated!!!
     for (i in rev(seq_along(penv.list))) {
       copy.into.env(source=penv.list[[i]],dest=dest,from.restore.objects=TRUE)
-      restored = c(restored,ls(envir=penv.list[[i]]))
+      restored = c(restored,ls(envir=penv.list[[i]], all.names=TRUE))
     }  
     copy.into.env(source=cenv,dest=dest,from.restore.objects=TRUE)
-    restored = c(restored,ls(envir=cenv))
+    restored = c(restored,ls(envir=cenv, all.names=TRUE))
   }
   message(paste("Restored: ", paste(restored,collapse=",")))
 }
@@ -288,10 +291,10 @@ clone.list = function(li, use.copied.ref = FALSE) {
 #' @param env the environment to be cloned
 #' @param use.copied.ref internal 
 #' @export
-clone.environment = function(env, use.copied.ref = FALSE) {
+clone.environment = function(env, use.copied.ref = FALSE, all.names=TRUE) {
   #print(as.list(env))
   #browser()
-  li = eapply(env,copy.object,use.copied.ref = use.copied.ref)
+  li = eapply(env,copy.object,use.copied.ref = use.copied.ref, all.names=all.names)
   cloned.env = as.environment(li)
   # Set same enclosing environment as env
   parent.env(cloned.env) <- parent.env(env)
@@ -633,12 +636,13 @@ get.stored.dots = function(name) {
 #' @param exclude optionally a vector of names that shall not be copied
 #' @param from.restore.objects internal paramater keep FALSE
 #' @param overwrite should existing objects in dest with same name be overwritten?
+#' @param all.names if TRUE copy all objects if names=NULL, if FALSE omit variables starting with .
 #' @export
-copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE, overwrite = TRUE) {
+copy.into.env = function(source=sys.frame(sys.parent(1)),dest=sys.frame(sys.parent(1)),names = NULL, exclude=NULL, from.restore.objects=FALSE, overwrite = TRUE, all.names=TRUE) {
 
   if (is.null(names)) {
     if (is.environment(source)) {
-      names = ls(envir=source)
+      names = ls(envir=source, all.names=all.names)
     } else {
       names = names(source)
     }
