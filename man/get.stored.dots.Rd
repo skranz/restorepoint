@@ -3,7 +3,7 @@
 \alias{get.stored.dots}
 \title{Returns the ellipsis (...) that has been stored in restore.point name as a list}
 \usage{
-get.stored.dots(name)
+get.stored.dots(name, deep.copy = FALSE)
 }
 \arguments{
 \item{name}{the name whith which restore.point or store.objects has been called.}

@@ -5,8 +5,8 @@
 \usage{
 restore.point(name, to.global = get.restore.point.options()$to.global,
   deep.copy = get.restore.point.options()$deep.copy, force = FALSE,
-  dots = eval(substitute(list(...), display.restore.point =
-  get.restore.point.options()$display.restore.point, env = parent.frame())))
+  display.restore.point = get.restore.point.options()$display.restore.point,
+  dots = eval(substitute(list(...), env = parent.frame())))
 }
 \arguments{
 \item{name}{key under which the objects are stored. For restore points at the beginning of a function, I would suggest the name of that function.}
@@ -28,7 +28,7 @@ The function behaves different when called from a function or when called from t
   # See the vignette for a detailed description
   library(restorepoint)
   init.restore.point() 
-  set.restore.point.options(to.global = TRUE)
+  set.restore.point.options(to.global = TRUE, display.restore.point=TRUE)
   # A function that shall swap the left and right part of a vector
   swap.in.vector = function(vec,swap.ind) {
     restore.point("swap.in.vector")

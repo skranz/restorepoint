@@ -209,7 +209,7 @@ store.objects = function(name=NULL,parent.num=-1,deep.copy = get.restore.point.o
   ev.dots <- NULL
   try(ev.dots <- force(dots), silent=TRUE)
   dots <- ev.dots
-  if (!is.null(dots)) {
+  if (!is.null(dots) & deep.copy) {
     dots = clone.list(dots)
   }
   attr(copied.env,"dots") <- dots
@@ -396,7 +396,7 @@ restore.point.browser = function(name,was.forced=FALSE, message.text=paste("rest
   # Populate environment with stored variables
   restore.objects(name,dest=env,was.forced=was.forced, deep.copy=deep.copy)
   # Get ... from original function
-  dots = get.stored.dots(name)
+  dots = get.stored.dots(name, deep.copy=deep.copy)
 
   local.variables=as.list(env)
   env.console(env=env,dots=dots, startup.message=NULL, local.variables=local.variables)
@@ -618,10 +618,10 @@ calls.to.trace = function(calls=sys.calls(),max.lines=4) {
 #' @param name the name whith which restore.point or store.objects has been called.
 #' 
 #' @export
-get.stored.dots = function(name) {
+get.stored.dots = function(name,deep.copy=FALSE) {
   env  = rpglob$OBJECTS.LIST[[name]]
   dots = attributes(env)$dots
-  if (length(dots)>0)
+  if (length(dots)>0 & deep.copy)
     dots = clone.list(dots)
   dots
 }
