@@ -8,8 +8,9 @@
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE, display.restore.point=FALSE)
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE, display.restore.point=FALSE, trace.calls=TRUE)
   rpglob$OBJECTS.LIST <- list()
+  rpglob$CALLS.LIST <- list()
 }
 rpglob <- new.env()
 
@@ -82,7 +83,7 @@ is.storing <- function() {
 #' @param force store even if set.storing(FALSE) has been called
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
 #' @export
-restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, dots = eval(substitute(list(...), env = parent.frame()))) {
+restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, trace.calls = get.restore.point.options()$trace.calls, dots = eval(substitute(list(...), env = parent.frame()))) {
 
   envir = sys.frame(-1)
   if (isTRUE(display.restore.point)) {
@@ -93,12 +94,24 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
   # when called from a function store objects
   restore = identical(.GlobalEnv,envir)  
   if (restore) {
+    if (trace.calls) {
+      calls = rpglob$CALLS.LIST[[name]]
+      if (length(calls)>0) {
+        tr = calls.to.trace(calls)
+        cat(paste0("\n",paste0(tr,collapse="\n")))
+      }
+    }
+    
+    
     if (!to.global) {
       restore.point.browser(name,was.forced=force, deep.copy=deep.copy)
     } else {
       restore.objects(name=name,was.forced=force,deep.copy=deep.copy)
     }
   } else {
+    if (trace.calls) {
+      rpglob$CALLS.LIST[[name]] <- sys.calls()  
+    }
     store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
   }
 }

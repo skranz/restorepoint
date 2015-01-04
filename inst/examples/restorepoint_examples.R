@@ -99,7 +99,7 @@ examples.restore.point = function () {
   # See the vignette for a detailed description
   library(restorepoint)
   init.restore.point() 
-  set.restore.point.options(to.global = TRUE, display.restore.point=TRUE)
+  set.restore.point.options(to.global = TRUE, display.restore.point=TRUE, trace.calls=TRUE)
   # A function that shall swap the left and right part of a vector
   swap.in.vector = function(vec,swap.ind) {
     restore.point("swap.in.vector")
@@ -107,6 +107,7 @@ examples.restore.point = function () {
     right = vec[swap.ind:nrow(vec)]
     c(right,left)
   }
+  
   swap.in.vector(1:10,4)
   
   # Paste the body of the function
