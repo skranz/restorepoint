@@ -2,7 +2,7 @@
 
 # Debug with the R console by setting restore points.
 
-
+rpglob <- new.env()
 .onLoad <- function(libname, pkgname) {
   init.restore.point()  
 }
@@ -11,8 +11,26 @@ init.restore.point = function() {
   rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE, display.restore.point=FALSE, trace.calls=TRUE)
   rpglob$OBJECTS.LIST <- list()
   rpglob$CALLS.LIST <- list()
+  rpglob$TESTS.LIST <- list()
 }
-rpglob <- new.env()
+
+clear.restore.point.tests = function() {
+  rpglob$TESTS.LIST <- list()
+}
+
+#' Add one or several test functions
+#'
+#' A test function is called after a restore point
+#' has stored data. It must have an argument env and name.
+#' It can check whether certain conditions are satisfied by
+#' the variables
+#' 
+#' @export  
+add.restore.point.test = function(...) {
+  tests = list(...)
+  rpglob$TESTS.LIST[names(tests)] = tests
+}
+
 
 
 #' Set global options for restore points
@@ -83,11 +101,21 @@ is.storing <- function() {
 #' @param force store even if set.storing(FALSE) has been called
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
 #' @export
-restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, trace.calls = get.restore.point.options()$trace.calls, dots = eval(substitute(list(...), env = parent.frame()))) {
+restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, indent.level = TRUE, trace.calls = get.restore.point.options()$trace.calls,max.trace.lines=10, dots = eval(substitute(list(...), env = parent.frame()))) {
 
   envir = sys.frame(-1)
   if (isTRUE(display.restore.point)) {
-    cat("\nrestore.point: ", name)
+    if (!indent.level) {
+      cat("\nrestore.point: ", name)
+    } else {
+      level = max(length(sys.calls())-2,0)
+      if (level>9) {
+        indent = paste0(level," .......")
+      } else {
+        indent = paste0(rep(".", level),collapse="")
+      }
+      cat(paste0("\n",indent,"restore.point: ", name))
+    }
   }
   
   # restore objects if called from the global environment
@@ -97,7 +125,7 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
     if (trace.calls) {
       calls = rpglob$CALLS.LIST[[name]]
       if (length(calls)>0) {
-        tr = calls.to.trace(calls)
+        tr = calls.to.trace(calls,max.lines = max.trace.lines)
         cat(paste0("\n",paste0(tr,collapse="\n")))
       }
     }
@@ -113,6 +141,11 @@ restore.point = function(name,to.global = get.restore.point.options()$to.global,
       rpglob$CALLS.LIST[[name]] <- sys.calls()  
     }
     store.objects(name=name,parent.num=-2, deep.copy=deep.copy, force=force,dots=dots)
+    
+    # call test funs
+    for (test.fun in rpglob$TESTS.LIST) {
+      test.fun(env = rpglob$OBJECTS.LIST[[name]],name=name)  
+    }
   }
 }
 
