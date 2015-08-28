@@ -21,6 +21,14 @@ restore.point(name, to.global = get.restore.point.options()$to.global,
 
 \item{force}{store even if set.storing(FALSE) has been called}
 
+\item{display.restore.point}{shall a text be shown in the console if restore.point is called. Can be useful when informative tracebacks are not readily availbale, e.g. when debugging shiny apps.}
+
+\item{indent.level}{when display.restore.point=TRUE shall level of nestedness be illustrated by identation}
+
+\item{trace.calls}{when objects are restored, shall a traceback be shown}
+
+\item{max.trace.lines}{if trace.calls=TRUE how many lines shall be shown at most in the traceback.}
+
 \item{dots}{by default a list of the ... argument of the function in whicht restore.point was called}
 }
 \description{

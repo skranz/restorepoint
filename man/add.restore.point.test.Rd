@@ -6,10 +6,12 @@
 \usage{
 add.restore.point.test(...)
 }
+\arguments{
+\item{...}{a slist of test functions that will be called with the stored arguments}
+}
 \description{
 A test function is called after a restore point
 has stored data. It must have an argument env and name.
-It can check whether certain conditions are satisfied by
-the variables
+It can check whether certain conditions are satisfied by the variables
 }
 

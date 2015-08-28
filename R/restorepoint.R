@@ -22,9 +22,8 @@ clear.restore.point.tests = function() {
 #'
 #' A test function is called after a restore point
 #' has stored data. It must have an argument env and name.
-#' It can check whether certain conditions are satisfied by
-#' the variables
-#' 
+#' It can check whether certain conditions are satisfied by the variables
+#' @param ... a slist of test functions that will be called with the stored arguments
 #' @export  
 add.restore.point.test = function(...) {
   tests = list(...)
@@ -41,7 +40,7 @@ add.restore.point.test = function(...) {
 #' - deep.copy Default = FALSE. If TRUE then when storing and restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. deep.copy = FALSE substantially speeds up restore.point.
 #' - to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
 #' @export 
-set.restore.point.options = function(options=NULL,...) {
+restore.point.options = set.restore.point.options = function(options=NULL,...) {
   options = c(options,list(...))
   unknown.options = setdiff(names(options),names(get.restore.point.options())) 
   if (length(unknown.options)>0) {
@@ -100,6 +99,10 @@ is.storing <- function() {
 #' @param deep.copy if TRUE try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE (DEFAULT) may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
 #' @param force store even if set.storing(FALSE) has been called
 #' @param dots by default a list of the ... argument of the function in whicht restore.point was called
+#' @param display.restore.point shall a text be shown in the console if restore.point is called. Can be useful when informative tracebacks are not readily availbale, e.g. when debugging shiny apps.
+#' @param indent.level when display.restore.point=TRUE shall level of nestedness be illustrated by identation
+#' @param trace.calls when objects are restored, shall a traceback be shown
+#' @param max.trace.lines if trace.calls=TRUE how many lines shall be shown at most in the traceback.
 #' @export
 restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, indent.level = TRUE, trace.calls = get.restore.point.options()$trace.calls,max.trace.lines=10, dots = eval(substitute(list(...), env = parent.frame()))) {
 
@@ -336,6 +339,7 @@ clone.list = function(li, use.copied.ref = FALSE) {
 #' Deep copy of an environment
 #' @param env the environment to be cloned
 #' @param use.copied.ref internal 
+#' @param all.names passed to eapply
 #' @export
 clone.environment = function(env, use.copied.ref = FALSE, all.names=TRUE) {
   #print(as.list(env))
@@ -662,7 +666,7 @@ calls.to.trace = function(calls=sys.calls(),max.lines=4) {
 #' Returns the ellipsis (...) that has been stored in restore.point name as a list
 #' 
 #' @param name the name whith which restore.point or store.objects has been called.
-#' 
+#' @param deep.copy shall a deep copy of stored objects be made
 #' @export
 get.stored.dots = function(name,deep.copy=FALSE) {
   env  = rpglob$OBJECTS.LIST[[name]]

@@ -10,6 +10,8 @@ clone.environment(env, use.copied.ref = FALSE, all.names = TRUE)
 \item{env}{the environment to be cloned}
 
 \item{use.copied.ref}{internal}
+
+\item{all.names}{passed to eapply}
 }
 \description{
 Deep copy of an environment

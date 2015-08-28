@@ -8,6 +8,8 @@ get.stored.dots(name, deep.copy = FALSE)
 }
 \arguments{
 \item{name}{the name whith which restore.point or store.objects has been called.}
+
+\item{deep.copy}{shall a deep copy of stored objects be made}
 }
 \description{
 Returns the ellipsis (...) that has been stored in restore.point name as a list
