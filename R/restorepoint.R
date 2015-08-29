@@ -98,7 +98,7 @@ is.storing <- function() {
 #' @param to.global if TRUE (default) objects are restored by simply copying them into the global environment. If FALSE a new environment will be created and the restore point browser will be invoked. 
 #' @param deep.copy if TRUE try to make deep copies of  objects that are by default copied by reference. Works so far for environments (recursivly). The function will search lists whether they contain reference objects, but for reasons of speed not yet in other containers. E.g. if an evironment is stored in a data.frame, only a shallow copy will be made. Setting deep.copy = FALSE (DEFAULT) may be useful if storing takes very long and variables that are copied by reference are not used or not modified.
 #' @param force store even if set.storing(FALSE) has been called
-#' @param dots by default a list of the ... argument of the function in whicht restore.point was called
+#' @param dots by default a list of the ... argument of the function in which restore.point was called
 #' @param display.restore.point shall a text be shown in the console if restore.point is called. Can be useful when informative tracebacks are not readily availbale, e.g. when debugging shiny apps.
 #' @param indent.level when display.restore.point=TRUE shall level of nestedness be illustrated by identation
 #' @param trace.calls when objects are restored, shall a traceback be shown

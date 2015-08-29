@@ -1,26 +1,35 @@
-restorepoint 0.14
------------------
+restorepoint 0.1.7
+------------------
+
+* 2015-08-29
+* A few updates in the last two years. Here is just some excerpt
+* break.point: call restore point and immedatialy stop execution (suggested by @landroni)
+* display.restore.point: if set TRUE (can also be globally set TRUE with restore.point.options) the console cats a short message whenever restore.point is called inside a function. If a lot of your functions call restore point, this can yield a trace of your called functions. I find this feature useful when debugging shiny apps, because I have not yet figured out another way to get a sensible traceback to locate an error inside a shiny app.
+
+
+restorepoint 0.1.4
+------------------
 
 * 2013-08-28
 * Set default deep.copy = FALSE. Runs quicker. Furthermore, deep.copy is limited, e.g. it does not work correctly if an environment has pointers outside the stored arguments. Sometimes it is therefore preferable not to deep.copy environments.
 * Change in clone.environment: clone gets the same enclosing environment as the original environment. Before it was an empty environment. Improves restoring with deep.copy = TRUE  
 
 
-restorepoint 0.12
------------------
+restorepoint 0.1.2
+------------------
 
 * 2013-07-23
 * Changed order of arguments in restore.point, to.global is now second argument (thanks to Liviu Andronic for the suggestion)
 * Added a simple function assert to check code via assertions
 * Allow to set deep.copy globally as a restore.point.option 
 
-restorepoint 0.11
------------------
+restorepoint 0.1.1
+------------------
 
 * In the restorepoint console, the restored variables will be directly copied into the local environment in which expressions are evaluated. Before they were just copied into an enclosing environment. One effect: ls() shows now also the restored variables.
 
-restorepoint 0.1
-----------------
+restorepoint 0.1.0
+------------------
 
 * First version of restorepoint to be put on the CRAN. The project is hosted on git hub under:
   https://github.com/skranz/restorepoint
