@@ -18,3 +18,5 @@ export(restore.point.browser)
 export(restore.point.options)
 export(set.storing)
 export(store.objects)
+
+importFrom("utils", "capture.output")
