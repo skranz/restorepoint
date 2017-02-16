@@ -1,5 +1,8 @@
+<!-- \VignetteEngine{knitr::knitr} -->
+
 Debugging R with restore points
 ========================================================
+
 
 **2013-08-28**
 

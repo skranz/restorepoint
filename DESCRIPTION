@@ -1,8 +1,8 @@
 Package: restorepoint
 Type: Package
 Title: Debugging with Restore Points
-Version: 0.1.7
-Date: 2015-08-28
+Version: 0.1.8
+Date: 2017-02-16
 URL: https://github.com/skranz/restorepoint
 Author: Sebastian Kranz
 Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
@@ -15,3 +15,5 @@ Description: Debugging with restore points instead of break points. A restore
 License: GPL (>= 2)
 Collate:
     'restorepoint.R'
+VignetteBuilder: knitr
+RoxygenNote: 5.0.0
