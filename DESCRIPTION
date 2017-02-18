@@ -11,9 +11,8 @@ Description: Debugging with restore points instead of break points. A restore
     values can later be retrieved and evaluated in a modified R console that
     replicates the function's environment. To debug step by step, one can
     simply copy & paste the function body from the R script. Particularly
-    convenient in combination with RStudio. See the github page for a tutorial.
+    convenient in combination with "RStudio". See the "Github" page inst/myvignette for a tutorial.
 License: GPL (>= 2)
 Collate:
     'restorepoint.R'
-VignetteBuilder: knitr
 RoxygenNote: 5.0.0
