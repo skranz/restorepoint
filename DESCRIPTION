@@ -1,18 +1,20 @@
 Package: restorepoint
 Type: Package
 Title: Debugging with Restore Points
-Version: 0.1.8
-Date: 2017-02-16
+Version: 0.1.9
+Date: 2017-04-11
 URL: https://github.com/skranz/restorepoint
 Author: Sebastian Kranz
 Maintainer: Sebastian Kranz <sebastian.kranz@uni-ulm.de>
 Description: Debugging with restore points instead of break points. A restore
     point stores all local variables when called inside a function. The stored
     values can later be retrieved and evaluated in a modified R console that
-    replicates the function's environment. To debug step by step, one can
-    simply copy & paste the function body from the R script. Particularly
-    convenient in combination with "RStudio". See the "Github" page inst/myvignette for a tutorial.
+    replicates the function's environment. To debug step by step, one can simply
+    copy & paste the function body from the R script. Particularly convenient
+    in combination with "RStudio". See the "Github" page inst/vignettes for a
+    tutorial.
 License: GPL (>= 2)
 Collate:
     'restorepoint.R'
+Suggests: testthat
 RoxygenNote: 5.0.0
