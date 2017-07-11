@@ -40,8 +40,14 @@ add.restore.point.test = function(...) {
 #' - deep.copy Default = FALSE. If TRUE then when storing and restoring tries to make a deep copy of R objects that are by default copied by reference, like environments. deep.copy = FALSE substantially speeds up restore.point.
 #' - to.global Default=TRUE. If  TRUE then when options are restored, they are simply copied into the global environment and the R console is directly used for debugging. If FALSE a browser mode will be started instead. It is still possible to parse all R commands into the browser and to use copy and paste. To quit the browser press ESC in the R console. The advantage of the browser is that all objects are stored in a newly generated environment that mimics the environemnt of the original function, i.e. global varariables are not overwritten. Furthermore in the browser mode, one can pass the ... object to other functions, while this does not work in the global environment. The drawback is that the browser is still not as convenient as the normal R console, e.g. pressing arrow up does not restore the previous command. Also, one has to press Esc to leave the browser mode.
 #' @export 
-restore.point.options = set.restore.point.options = function(options=NULL,...) {
-  options = c(options,list(...))
+restore.point.options = set.restore.point.options = function(options=NULL,display.restore.point=FALSE,...) {
+
+  if (!is.null(options$display.restore.point)) {
+    options = c(options,list(...))
+  } else {
+    options = c(options,list(display.restore.point=display.restore.point,...))
+
+  }
   unknown.options = setdiff(names(options),names(get.restore.point.options())) 
   if (length(unknown.options)>0) {
     warning(paste("unknown options", paste(unknown.options, collapse=","),"ignored"))

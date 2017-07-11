@@ -4,7 +4,7 @@
 \alias{restore.point.options}
 \title{Set global options for restore points}
 \usage{
-restore.point.options(options = NULL, ...)
+restore.point.options(options = NULL, display.restore.point = FALSE, ...)
 }
 \arguments{
 \item{options}{a list of options that shall be set. Possible options are listed below}
