@@ -17,15 +17,14 @@ Abstract:
   This vignette briefly illustrates the use of restore points and compares advantages
   and drawbacks compared to the traditional method of setting break points via browser(). Restore points are particularly convenient when using an IDE like RStudio that allows to quickly run selected code from a script in the R Console. 
 
-# Installation of newest version
+# Installation of restorepoint version
 
-To install the newest version of the package from github first install and load the *devtools* package and then type in the R console:
+To install `restorepoint` run the following R code:
 
-install_github(repo="restorepoint", username="skranz")
-
-To install the (typically older) CRAN version of restorepoint, type
-
-install.packages("restorepoint")
+```r
+if (!require(devtools)) install.packages("devtools")
+devtools::install_github("skranz/restorepoint"")
+```
 
 # A simple example of debugging with restore points
 
