@@ -9,4 +9,3 @@ get.restore.point.options()
 \description{
 Get global options for restore points
 }
-

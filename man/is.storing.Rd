@@ -9,4 +9,3 @@ is.storing()
 \description{
 Check whether objects currently are stored or not
 }
-

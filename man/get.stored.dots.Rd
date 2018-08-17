@@ -14,4 +14,3 @@ get.stored.dots(name, deep.copy = FALSE)
 \description{
 Returns the ellipsis (...) that has been stored in restore.point name as a list
 }
-

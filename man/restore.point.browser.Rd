@@ -23,7 +23,6 @@ returns nothing
 \description{
 The function is mainly for internal use by restore.point.
 }
-
 \examples{\dontrun{
   library(restorepoint)
   

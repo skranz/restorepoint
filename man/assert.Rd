@@ -12,4 +12,3 @@ assert(cond)
 \description{
 Can be used for checking for errors in functions
 }
-

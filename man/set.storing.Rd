@@ -12,4 +12,3 @@ set.storing(storing = TRUE)
 \description{
 Set whether objects shall be stored or not
 }
-

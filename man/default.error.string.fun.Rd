@@ -14,4 +14,3 @@ default.error.string.fun(e, tb)
 \description{
 A default error string function for eval with error trace
 }
-

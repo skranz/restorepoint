@@ -22,4 +22,3 @@ returns nothing but automatically copies the stored variables into the global en
 \description{
 Restore stored objects by copying them into the specified environment. Is used by restore.point
 }
-

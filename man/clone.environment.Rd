@@ -16,4 +16,3 @@ clone.environment(env, use.copied.ref = FALSE, all.names = TRUE)
 \description{
 Deep copy of an environment
 }
-

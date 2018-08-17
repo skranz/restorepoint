@@ -17,4 +17,3 @@ restore.point.options(options = NULL, display.restore.point = FALSE, ...)
 \description{
 Set global options for restore points
 }
-

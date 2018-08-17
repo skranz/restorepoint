@@ -14,4 +14,3 @@ A test function is called after a restore point
 has stored data. It must have an argument env and name.
 It can check whether certain conditions are satisfied by the variables
 }
-

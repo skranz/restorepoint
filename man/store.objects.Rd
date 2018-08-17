@@ -33,4 +33,3 @@ returns nothing, just called for side effects
 \description{
 Stores all local objects of the calling environment to be able to restore them later when debugging. Is used by restore.point
 }
-

@@ -25,7 +25,6 @@ Adapted from code in tools:::.try_quietly
 as suggested by Kurt Hornik in the following message
 https://stat.ethz.ch/pipermail/r-devel/2005-September/034546.html
 }
-
 \examples{\dontrun{
   # A function that has an error
   f = function(x) {

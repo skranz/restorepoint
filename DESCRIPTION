@@ -15,4 +15,4 @@ Description: Debugging with restore points instead of break points. A restore
 License: GPL (>= 2)
 Collate:
     'restorepoint.R'
-RoxygenNote: 5.0.0
+RoxygenNote: 6.0.1

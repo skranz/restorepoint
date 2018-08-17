@@ -26,7 +26,6 @@ This function can be used as an alternative to browser(). When called inside a f
 \details{
 An alternative to break points are restore points. In the tutorial on GitHub, I provide some arguments how restore points can facilitate debugging compared to break points.
 }
-
 \examples{\dontrun{
   library(restorepoint)
   set.restore.point.options(break.point.to.global = FALSE)

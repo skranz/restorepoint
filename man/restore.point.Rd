@@ -4,13 +4,12 @@
 \alias{restore.point}
 \title{Sets a restore point}
 \usage{
-restore.point(name, to.global = get.restore.point.options()$to.global,
-  deep.copy = get.restore.point.options()$deep.copy, force = FALSE,
-  display.restore.point = get.restore.point.options()$display.restore.point,
-  indent.level = TRUE,
-  trace.calls = get.restore.point.options()$trace.calls,
+restore.point(name, to.global = options$to.global,
+  deep.copy = options$deep.copy, force = FALSE,
+  display.restore.point = options$display.restore.point,
+  indent.level = TRUE, trace.calls = options$trace.calls,
   max.trace.lines = 10, dots = eval(substitute(list(...), env =
-  parent.frame())))
+  parent.frame())), options = get.restore.point.options())
 }
 \arguments{
 \item{name}{key under which the objects are stored. For restore points at the beginning of a function, I would suggest the name of that function.}
@@ -34,7 +33,6 @@ restore.point(name, to.global = get.restore.point.options()$to.global,
 \description{
 The function behaves different when called from a function or when called from the global environemnt. When called from a function, it makes a backup copy of all local objects and stores them internally under a key specified by name. When called from the global environment, it restores the previously stored objects by copying them into the global environment. See the package Vignette for an illustration of how this function can facilitate debugging.
 }
-
 \examples{\dontrun{
   
   # See the vignette for a detailed description
