@@ -3,6 +3,7 @@ test_that("get options does not fail", {
 	expect_equal(optionNames, c(
 				    "break.point.to.global", 
 				    "deep.copy", 
+				    "disable",
 				    "display.restore.point", 
 				    "multi.line.parse.error",
 				    "storing",
@@ -12,9 +13,9 @@ test_that("get options does not fail", {
 
 test_that("options can be set", {
 	old <- get.restore.point.options()[["deep.copy"]]
-	set.restore.point.options(deep.copy = TRUE)
+	restore.point.options(deep.copy = TRUE)
 	new <- get.restore.point.options()[["deep.copy"]]	
 	expect_equal(old, FALSE)
 	expect_equal(new, TRUE)
-	set.restore.point.options(deep.copy = old)
+	restore.point.options(deep.copy = old)
 })
