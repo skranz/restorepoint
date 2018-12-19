@@ -34,6 +34,7 @@ add.restore.point.test = function(...) {
 
 #' Set global options for restore points
 #' 
+#' @param display.restore.point Makes sure that the display.restore.point option is set to FALSE by default
 #' @param options a list of options that shall be set. Possible options are listed below
 #' @param ... options can also directly be passed. The following options can be set:
 #' - storing Default=TRUE enable or disable storing of options, setting storing = FALSE basicially turns off debugging via restore points
@@ -480,7 +481,7 @@ restore.point.browser = function(name,was.forced=FALSE, message.text=paste("rest
 #' @param multi.line.parse.error A substring used to identify an error by parse that is due to parsing the beginning of a multi-line expression. The substring can depend on the language of R error messages. The packages tries to find a correct substring automatically as default.
 #' @param local.variables additional variables that shall be locally available 
 #' @return Returns nothing since the function must be stopped by pressing ESC.
-
+#' @importFrom utils capture.output
 #' @export
 env.console = function(env = new.env(parent=parent.env), parent.env = parent.frame(), dots=NULL,prompt=": ", startup.message = "Press ESC to return to standard R console", multi.line.parse.error = get.restore.point.options()$multi.line.parse.error, local.variables = NULL) {
   
