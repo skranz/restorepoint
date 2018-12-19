@@ -31,7 +31,6 @@ Returns nothing since the function must be stopped by pressing ESC.
 \description{
 Emulates an R console that evaluates expressions in the specified environement env. You return to the standard R console by pressing ESC
 }
-
 \examples{\dontrun{
 
   # Generate an environment and start a console that can be used to evaluate 

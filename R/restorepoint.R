@@ -8,7 +8,7 @@ rpglob <- new.env()
 }
 
 init.restore.point = function() {
-  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE, display.restore.point=FALSE, trace.calls=TRUE)
+  rpglob$options = list(storing=TRUE,to.global = TRUE,multi.line.parse.error = get.multi.line.parse.error(), deep.copy=FALSE, break.point.to.global=FALSE, display.restore.point=FALSE, trace.calls=TRUE, disable=FALSE)
   rpglob$OBJECTS.LIST <- list()
   rpglob$CALLS.LIST <- list()
   rpglob$TESTS.LIST <- list()
@@ -78,6 +78,16 @@ get.stored.object.list = function() {
   rpglob$OBJECTS.LIST
 }
 
+
+#' Globally disable or enable restore points
+#' 
+#' @param disable if TRUE globaly disable restore points. This speeds up calls to restore.point quickly. Is faster than set.storing(FALSE), but has no informative messages when restore.point is called from the global env.
+#' @export
+disable.restore.points <- function(disable=TRUE) {
+  set.restore.point.options(disable=disable)
+}
+
+
 #' Set whether objects shall be stored or not
 #' 
 #' @param storing if FALSE don't store objects if restore.point or store.objects is called. May save time. If TRUE (default) turn on storage again.
@@ -111,8 +121,9 @@ is.storing <- function() {
 #' @param trace.calls when objects are restored, shall a traceback be shown
 #' @param max.trace.lines if trace.calls=TRUE how many lines shall be shown at most in the traceback.
 #' @export
-restore.point = function(name,to.global = get.restore.point.options()$to.global,deep.copy = get.restore.point.options()$deep.copy, force=FALSE,display.restore.point = get.restore.point.options()$display.restore.point, indent.level = TRUE, trace.calls = get.restore.point.options()$trace.calls,max.trace.lines=10, dots = eval(substitute(list(...), env = parent.frame()))) {
-
+restore.point = function(name,to.global = options$to.global,deep.copy = options$deep.copy, force=FALSE,display.restore.point = options$display.restore.point, indent.level = TRUE, trace.calls = options$trace.calls,max.trace.lines=10, dots = eval(substitute(list(...), env = parent.frame())), options=get.restore.point.options()) {
+  if (isTRUE(options$disable)) return()
+  
   envir = sys.frame(-1)
   if (isTRUE(display.restore.point)) {
     if (!indent.level) {

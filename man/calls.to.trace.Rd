@@ -17,7 +17,6 @@ a character vector with one element for each call formated in a similar fashion 
 \description{
 Transforms a list returned by sys.calls into a vector of strings that looks like a result of traceback()
 }
-
 \examples{\dontrun{
   f = function(a=5) calls.to.trace(rev(sys.calls()))
   g = function(x=2) f(x)

@@ -26,4 +26,3 @@ copy.into.env(source = sys.frame(sys.parent(1)),
 \description{
 Copies all members of a list or environment into an environment
 }
-
