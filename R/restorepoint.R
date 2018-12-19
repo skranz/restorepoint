@@ -120,6 +120,7 @@ is.storing <- function() {
 #' @param indent.level when display.restore.point=TRUE shall level of nestedness be illustrated by identation
 #' @param trace.calls when objects are restored, shall a traceback be shown
 #' @param max.trace.lines if trace.calls=TRUE how many lines shall be shown at most in the traceback.
+#' @param options option list to fill the parameter defaults from
 #' @export
 restore.point = function(name,to.global = options$to.global,deep.copy = options$deep.copy, force=FALSE,display.restore.point = options$display.restore.point, indent.level = TRUE, trace.calls = options$trace.calls,max.trace.lines=10, dots = eval(substitute(list(...), env = parent.frame())), options=get.restore.point.options()) {
   if (isTRUE(options$disable)) return()

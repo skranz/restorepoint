@@ -165,3 +165,7 @@ pip-log.txt
 # R
 *.Rcheck
 restorepoint_*.tar.gz
+
+# RStudio
+*.Rproj
+.Rproj.user

@@ -23,26 +23,3 @@ returns nothing
 \description{
 The function is mainly for internal use by restore.point.
 }
-\examples{\dontrun{
-  library(restorepoint)
-  
-  set.restore.point.options(to.global = FALSE)
-  
-  # A function that shall swap the left and right part of a vector
-  swap.in.vector = function(vec,swap.ind) {
-    restore.point("swap.in.vector")
-    left  = vec[1:(swap.ind-1)]
-    right = vec[swap.ind:nrow(vec)]
-    c(right,left)
-  }
-  swap.in.vector(1:10,4)
-  
-  # You could call
-  restore.point.browser("swap.in.vector")
-  
-  # But there is no need to. Just running in the R Console (global environment) the command
-  restore.point("swap.in.vector")
-  # has the same effect (at least once you have set restore.point.options(to.global=FALSE))
-  
-  # Basically restore.point.browser() is rather an internal function
-}}
