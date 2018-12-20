@@ -16,5 +16,6 @@ Description: Debugging with restore points instead of break points. A restore
 License: GPL (>= 2)
 Collate:
     'restorepoint.R'
-Suggests: testthat
+Suggests: testthat, knitr
+VignetteBuilder: knitr
 RoxygenNote: 6.0.1
