@@ -1,4 +1,11 @@
-<!-- \VignetteEngine{knitr::knitr} -->
+---
+output:
+  pdf_document: default
+  html_document: default
+  vignette: >
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Debugging R with restore points}
+---
 
 Debugging R with restore points
 ========================================================
