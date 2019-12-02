@@ -1,4 +1,4 @@
-[![](https://cranlogs.r-pkg.org/badges/restorepoint)](https://cran.r-project.org/package=restorepoint)
+[![](https://cranlogs.r-pkg.org/badges/restorepoint)](https://cran.r-project.org/package=restorepoint) [![Build Status](https://travis-ci.org/skranz/restorepoint.svg?branch=master)](https://travis-ci.org/skranz/restorepoint)
 
 Debugging R with restore points
 ========================================================
