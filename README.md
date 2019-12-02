@@ -1,3 +1,5 @@
+[![](https://cranlogs.r-pkg.org/badges/restorepoint)](https://cran.r-project.org/package=restorepoint)
+
 Debugging R with restore points
 ========================================================
 
